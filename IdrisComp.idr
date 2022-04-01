@@ -47,7 +47,7 @@ printList = stringMap print
 runInstruction : List Int -> Instruction -> Maybe (List Int)
 runInstruction xs (Push a) = Just (a :: xs)
 runInstruction (x :: y :: xs) Add = Just ((x + y) :: xs)
-runInstruction (x :: y :: xs) Subtract = Just ((x - y) :: xs) 
+runInstruction (x :: y :: xs) Subtract = Just ((y - x) :: xs) 
 runInstruction (x :: y :: xs) Mult = Just ((x * y) :: xs)
 runInstruction _ _ = Nothing
 
@@ -55,14 +55,26 @@ runInstruction _ _ = Nothing
 runInstructions: List Instruction -> List Int -> Maybe (List Int)
 runInstructions xs ys = foldlM runInstruction ys xs
 
+
+runAll : ASTExpr -> compile -> runInstructions
+-- implementation
+
+runAll2 : ASTExpr -> evaluate -> List Int
+-- implementation
+
+
 test_runInstruction_add : runInstruction [1, 2] Add = Just [3]
 test_runInstruction_add = Refl
 
-test2_runInstructions_add : runInstructions [Push 1, Push 2, Add] [] = Just [3]
-test2_runInstructions_add = Refl
+test_runInstruction_sub : runInstruction [2, 1] Subtract = Just [-1]
+test_runInstruction_sub = Refl
 
-test_runInstructions_add : runInstruction [2, 3] Subtract = Just [-1]
+
+test_runInstructions_add : runInstructions [Push 1, Push 2, Add] [] = Just [3]
 test_runInstructions_add = Refl
+
+test_runInstructions_sub : runInstructions [Push 1, Push 2, Subtract] [] = Just [-1]
+test_runInstructions_sub = Refl
 
 test3_runAll : runInstructions (compile (EAddition (EIntLit 2) (EIntLit 3))) [] === Just [evaluate (EAddition (EIntLit 2) (EIntLit 3))]
 test3_runAll = Refl
