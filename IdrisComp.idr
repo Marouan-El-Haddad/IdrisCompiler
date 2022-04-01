@@ -55,13 +55,11 @@ runInstruction _ _ = Nothing
 runInstructions: List Instruction -> List Int -> Maybe (List Int)
 runInstructions xs ys = foldlM runInstruction ys xs
 
-
-runAll : ASTExpr -> compile -> runInstructions
+runAll : ASTExpr -> compile -> runInstructions -> Maybe (List Int)
 -- implementation
 
-runAll2 : ASTExpr -> evaluate -> List Int
+runAll2 : ASTExpr -> evaluate -> Maybe (List Int)
 -- implementation
-
 
 test_runInstruction_add : runInstruction [1, 2] Add = Just [3]
 test_runInstruction_add = Refl
