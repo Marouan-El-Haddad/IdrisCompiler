@@ -62,7 +62,6 @@ runAll e = runInstructions(compile(e)) []
 |||Universal statements linking the evaluation path via evaluate
 runAll2: (e : ASTExpr) -> Maybe (List Int)
 runAll2 e = Just([evaluate(e)])
-runAll2 _ = Nothing
 
 -- Testing all functions invidually and against each other:
 test_runInstruction_add : runInstruction [1, 2] Add = Just [3]
@@ -71,13 +70,11 @@ test_runInstruction_add = Refl
 test_runInstruction_sub : runInstruction [2, 1] Subtract = Just [-1]
 test_runInstruction_sub = Refl
 
-
 test_runInstructions_add : runInstructions [Push 1, Push 2, Add] [] = Just [3]
 test_runInstructions_add = Refl
 
 test_runInstructions_sub : runInstructions [Push 1, Push 2, Subtract] [] = Just [-1]
 test_runInstructions_sub = Refl
-
 
 test_runAll_add : runAll (EAddition (EIntLit 2) (EIntLit 3))  = Just [5]
 test_runAll_add = Refl
@@ -85,10 +82,8 @@ test_runAll_add = Refl
 test_runAll2_add : runAll2 (EAddition (EIntLit 2) (EIntLit 3))  = Just [5]
 test_runAll2_add = Refl
 
-
 test_both_RunAlls : runAll (EAddition (EIntLit 2) (EIntLit 3)) = runAll2 (EAddition (EIntLit 2) (EIntLit 3))
 test_both_RunAlls = Refl
-
 
 test3_allFunc : runInstructions (compile (EAddition (EIntLit 2) (EIntLit 3))) [] === Just [evaluate (EAddition (EIntLit 2) (EIntLit 3))]
 test3_allFunc = Refl
