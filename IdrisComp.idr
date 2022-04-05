@@ -9,23 +9,26 @@ data ASTExpr
     | EMultiplication ASTExpr ASTExpr
 
 |||Instruction syntax
-data Instruction = Push Int | Add | Subtract | Mult
+data Instruction = Push Int | Add | Sub | Mult
 
 |||Compile expression to a list of instruction
+total
 compile : ASTExpr -> List Instruction
 compile (EIntLit a) =  [Push a]
 compile (EAddition a b) = compile a ++ compile b ++ [Add]
-compile (ESubtraction a b) = compile a ++ compile b ++ [Subtract]
+compile (ESubtraction a b) = compile a ++ compile b ++ [Sub]
 compile (EMultiplication a b) = compile a ++ compile b ++ [Mult]
 
 |||Writing the instructions to a file for the stack machine to execute
+total
 print : Instruction -> String
 print (Push a) = "Push " ++ show a
 print Add = "Add"
-print Subtract = "Subtract"
+print Sub = "Sub"
 print Mult = "Mult"
 
 |||Writing the List instructions to a file for the stack machine to execute (tail recursive and linear time by using stringMap)
+total
 stringMap : (a -> String) -> List a -> String
 stringMap f = go Lin
   where go : SnocList String -> List a -> String
@@ -33,22 +36,26 @@ stringMap f = go Lin
         go sx (x :: Nil) = go (sx :< f x) Nil
         go sx (x :: xs)  = go (sx :< f x :< "\n") xs
 
+total
 printList : List Instruction -> String
 printList = stringMap print
 
 --Taking a machine configuration to the next one by executing a single step of computations
+total
 runInstruction : List Int -> Instruction -> Maybe (List Int)
 runInstruction xs (Push a) = Just (a :: xs)
 runInstruction (x :: y :: xs) Add = Just ((x + y) :: xs)
-runInstruction (x :: y :: xs) Subtract = Just ((y - x) :: xs)
+runInstruction (x :: y :: xs) Sub = Just ((y - x) :: xs)
 runInstruction (x :: y :: xs) Mult = Just ((x * y) :: xs)
 runInstruction _ _ = Nothing
 
 |||Taking a machine configuration to the next one by executing multiple step of computations
+total
 runInstructions: List Instruction -> List Int -> Maybe (List Int)
 runInstructions xs ys = foldlM runInstruction ys xs
 
 |||Evaluate Abstract Syntax Tree and return value
+total
 evaluate : ASTExpr -> Int
 evaluate (EIntLit a) = a
 evaluate (EAddition a b) = evaluate a + evaluate b
@@ -56,10 +63,12 @@ evaluate (ESubtraction a b) = evaluate a - evaluate b
 evaluate (EMultiplication a b) = evaluate a * evaluate b
 
 |||Universal statement linking the evaluation path via compile followed by RunInstructions
+total
 runAll: (e : ASTExpr) -> Maybe (List Int)
 runAll e = runInstructions(compile(e)) []
 
 |||Universal statement linking the evaluation path via evaluate
+total
 runAll2: (e : ASTExpr) -> Maybe (List Int)
 runAll2 e = Just([evaluate(e)])
 
@@ -69,7 +78,7 @@ runAll2 e = Just([evaluate(e)])
 test_runInstruction_add : runInstruction [1, 2] Add = Just [3]
 test_runInstruction_add = Refl
 
-test_runInstruction_sub : runInstruction [2, 1] Subtract = Just [-1]
+test_runInstruction_sub : runInstruction [2, 1] Sub = Just [-1]
 test_runInstruction_sub = Refl
 
 test_runInstruction_mult : runInstruction [10, 2] Mult = Just [20]
@@ -79,7 +88,7 @@ test_runInstruction_mult = Refl
 test_runInstructions_add : runInstructions [Push 1, Push 2, Add] [] = Just [3]
 test_runInstructions_add = Refl
 
-test_runInstructions_sub : runInstructions [Push 1, Push 2, Subtract] [] = Just [-1]
+test_runInstructions_sub : runInstructions [Push 1, Push 2, Sub] [] = Just [-1]
 test_runInstructions_sub = Refl
 
 test_runInstructions_mult : runInstructions [Push 10, Push 2, Mult] [] = Just [20]
