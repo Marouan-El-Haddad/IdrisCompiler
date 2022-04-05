@@ -8,11 +8,13 @@ data ASTExpr
     | ESubtraction ASTExpr ASTExpr
     | EMultiplication ASTExpr ASTExpr
 
+|||Usng the Num interface to define basic numerical arithmetic
 Num (ASTExpr) where
     (+) = EAddition
     (*) = EMultiplication
     fromInteger = EIntLit . fromInteger
 
+|||Using the Neg interface to define operations on numbers which can be negative.
 Neg (ASTExpr) where
     negate x = 0 - x
     (-) = ESubtraction
@@ -36,7 +38,7 @@ print Add = "Add"
 print Sub = "Sub"
 print Mult = "Mult"
 
-|||Writing the List instructions to a file for the stack machine to execute (tail recursive and linear time by using stringMap)
+|||Helper function for printList (tail recursive and linear time by using stringMap)
 total
 stringMap : (a -> String) -> List a -> String
 stringMap f = go Lin
@@ -45,6 +47,7 @@ stringMap f = go Lin
         go sx (x :: Nil) = go (sx :< f x) Nil
         go sx (x :: xs)  = go (sx :< f x :< "\n") xs
 
+|||Writing the List instructions to a file for the stack machine to execute
 total
 printList : List Instruction -> String
 printList = stringMap print
