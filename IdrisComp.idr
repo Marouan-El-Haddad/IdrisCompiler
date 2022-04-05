@@ -8,6 +8,15 @@ data ASTExpr
     | ESubtraction ASTExpr ASTExpr
     | EMultiplication ASTExpr ASTExpr
 
+Num (ASTExpr) where
+    (+) = EAddition
+    (*) = EMultiplication
+    fromInteger = EIntLit . fromInteger
+
+Neg (ASTExpr) where
+    negate x = 0 - x
+    (-) = ESubtraction
+
 |||Instruction syntax
 data Instruction = Push Int | Add | Sub | Mult
 
