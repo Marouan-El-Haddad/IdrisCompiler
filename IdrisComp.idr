@@ -146,5 +146,9 @@ test3_allFunc_sub = Refl
 test3_allFunc_mul : runInstructions (compile (EMultiplication (EIntLit 10) (EIntLit 2))) [] === Just [evaluate (EMultiplication (EIntLit 10) (EIntLit 2))]
 test3_allFunc_mul = Refl
 
+-- plusZeroRightNeutralInt : (x : Int) -> x + 0 = 0
+addReduces : (n: Int) -> runAll (EAddition (EIntLit n) (EIntLit 0)) = Just [0 + n]
+addReduces n = Refl
+
 main : IO ()
 main = ?hole
