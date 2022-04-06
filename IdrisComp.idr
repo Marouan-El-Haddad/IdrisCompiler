@@ -8,7 +8,7 @@ data ASTExpr
     | ESubtraction ASTExpr ASTExpr
     | EMultiplication ASTExpr ASTExpr
 
-|||Usng the Num interface to define basic numerical arithmetic
+|||Using the Num interface to define basic numerical arithmetic
 Num (ASTExpr) where
     (+) = EAddition
     (*) = EMultiplication
