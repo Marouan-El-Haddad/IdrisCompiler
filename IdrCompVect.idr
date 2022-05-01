@@ -42,7 +42,7 @@ top : Stack (S n) -> Int
 top (x :: xs) = x
 
 exec : Code n m -> Stack n -> Stack m
-exec (Combine x y) xs = exec y(exec x(xs))
+exec (Combine x y) xs = exec y (exec x xs)
 exec (Push x) xs = x::xs
 exec Add (x0::x1::xs) = (x0 + x1) :: xs
 exec Sub (x0::x1::xs) = (x0 - x1) :: xs
