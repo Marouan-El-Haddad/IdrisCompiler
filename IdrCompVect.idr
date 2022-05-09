@@ -98,7 +98,6 @@ addCommutative : (x, y : Int) -> x + y = y + x
 0
 multCommutative : (x, y : Int) -> x * y = y * x
 
-
 0
 subCommutative : (x, y : Int) -> x - y = y - x
 
