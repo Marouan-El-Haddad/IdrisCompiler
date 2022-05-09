@@ -27,13 +27,12 @@ Stack : StackType -> Type
 Stack n = Vect n Int
 
 data Code : StackType -> StackType -> Type where
-    Combine : Code a b -> Code b c -> Code a c -- combine two Code into one
+    Combine : Code a b -> Code b c -> Code a c
     Push : Int -> Code n (S n)
     Add : Code (S (S n)) (S n)
     Sub : Code (S (S n)) (S n)
     Mult : Code (S (S n)) (S n)
     Pop : Code (S n) n
--- if/else skal have en træ struktur
 
 total
 compile : Expr -> Code k (S k)
