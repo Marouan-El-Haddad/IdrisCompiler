@@ -33,33 +33,53 @@ data Code : StackType -> StackType -> Type where
     Sub : Code (S (S n)) (S n)
     Mult : Code (S (S n)) (S n)
     Pop : Code (S n) n
+-- if/else skal have en træ struktur
 
 total
 compile : Expr -> Code k (S k)
 compile (EIntLit x) = Push x
-compile (EAddition x y) = Combine (compile y) (Combine (compile y) Add)
-compile (ESubtraction x y) = Combine (compile y) (Combine (compile y) Sub)
-compile (EMultiplication x y) = Combine (compile y) (Combine (compile y) Mult)
-
-total
-top : Stack (S n) -> Int
-top (x :: xs) = x
-
-total
-execSingle : Expr -> Int
-execSingle (EIntLit a) = a
-execSingle (EAddition a b) = execSingle a + execSingle b
-execSingle (ESubtraction a b) = execSingle a - execSingle b
-execSingle (EMultiplication a b) = execSingle a * execSingle b
+compile (EAddition x y) = Combine (compile x) (Combine (compile y) Add)
+compile (ESubtraction x y) = Combine (compile x) (Combine (compile y) Sub)
+compile (EMultiplication x y) = Combine (compile x) (Combine (compile y) Mult)
 
 total
 exec : Code n m -> Stack n -> Stack m
 exec (Combine x y) xs = exec y (exec x xs)
 exec (Push x) xs = x::xs
 exec Add (x0::x1::xs) = (x0 + x1) :: xs
-exec Sub (x0::x1::xs) = (x0 - x1) :: xs
+exec Sub (x0::x1::xs) = (x1 - x0) :: xs
 exec Mult (x0::x1::xs) = (x0 * x1) :: xs
 exec Pop (x :: xs) = xs
 
+total
+eval : Expr -> Int
+eval (EIntLit a) = a
+eval (EAddition a b) = eval a + eval b
+eval (ESubtraction a b) = eval a - eval b
+eval (EMultiplication a b) = eval a * eval b
+
+total
+top : Stack (S n) -> Int
+top (x :: xs) = x
+
+total
+runAll: (e : Expr) -> Int
+runAll e = top(exec(compile(e)) [])
+
+total
+runAll2: (e : Expr) -> Int
+runAll2 e = eval(e)
+
 main : IO ()
 main = ?hole2
+
+-- Tests
+
+test_both_RunAlls_add : runAll (2+3) = runAll2 (2+3)
+test_both_RunAlls_add = Refl
+
+test_both_RunAlls_sub : runAll (2-3) = runAll2 (2-3)
+test_both_RunAlls_sub = Refl
+
+test_both_RunAlls_mul : runAll (10*2) = runAll2 (10*2)
+test_both_RunAlls_mul = Refl
