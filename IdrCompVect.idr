@@ -75,6 +75,9 @@ main = ?hole2
 
 -- Tests
 
+test_both_RunAlls_add2 : exec Add (exec (compile 2) (eval 3 :: s)) = (eval 2 + eval 3) :: s
+test_both_RunAlls_add2 = Refl
+
 test_both_RunAlls_add : runAll (2+3) = runAll2 (2+3)
 test_both_RunAlls_add = Refl
 
@@ -83,3 +86,44 @@ test_both_RunAlls_sub = Refl
 
 test_both_RunAlls_mul : runAll (10*2) = runAll2 (10*2)
 test_both_RunAlls_mul = Refl
+
+-- correct_rhs_1 : (y : Expr) -> (x : Expr) -> top (exec Add (exec (compile y) (exec (compile x) []))) = prim__add_Int (eval x) (eval y)
+
+-- correct_rhs_2 : (y : Expr) -> (x : Expr) -> top (exec Sub (exec (compile y) (exec (compile x) []))) = prim__sub_Int (eval x) (eval y)
+
+-- correct_rhs_3 : (y : Expr) -> (x : Expr) -> top (exec Mult (exec (compile y) (exec (compile x) []))) = prim__mul_Int (eval x) (eval y)
+
+-- correct : (e : Expr) -> runAll e = runAll2 e
+-- correct (EIntLit x) = Refl
+-- correct (EAddition x y) = correct_rhs_1 y x
+-- correct (ESubtraction x y) = correct_rhs_2 y x
+-- correct (EMultiplication x y) = correct_rhs_3 y x
+total
+addComm : (a : Nat) -> (b : Nat) -> a + b = b + a
+addComm 0 b = sym(plusZeroRightNeutral b)
+addComm (S k) b = rewrite addComm k b in
+                    plusSuccRightSucc b k
+
+0
+addCommutative : (x, y : Int) -> x + y = y + x
+
+0
+multCommutative : (x, y : Int) -> x * y = y * x
+
+
+0
+subCommutative : (x, y : Int) -> x - y = y - x
+
+correct : (e : Expr) -> (s : Stack n) -> exec (compile e) s = eval e :: s
+correct (EIntLit x) s = Refl
+correct (EAddition x y) s = rewrite correct x s in 
+                            rewrite correct y (eval x :: s) in
+                            rewrite addCommutative (eval y) (eval x) in
+                            Refl
+correct (ESubtraction x y) s = rewrite correct x s in 
+                            rewrite correct y (eval x :: s) in
+                            Refl
+correct (EMultiplication x y) s = rewrite correct x s in 
+                            rewrite correct y (eval x :: s) in
+                            rewrite multCommutative (eval y) (eval x) in
+                            Refl
