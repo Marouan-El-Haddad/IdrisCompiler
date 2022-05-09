@@ -87,17 +87,6 @@ test_both_RunAlls_sub = Refl
 test_both_RunAlls_mul : runAll (10*2) = runAll2 (10*2)
 test_both_RunAlls_mul = Refl
 
--- correct_rhs_1 : (y : Expr) -> (x : Expr) -> top (exec Add (exec (compile y) (exec (compile x) []))) = prim__add_Int (eval x) (eval y)
-
--- correct_rhs_2 : (y : Expr) -> (x : Expr) -> top (exec Sub (exec (compile y) (exec (compile x) []))) = prim__sub_Int (eval x) (eval y)
-
--- correct_rhs_3 : (y : Expr) -> (x : Expr) -> top (exec Mult (exec (compile y) (exec (compile x) []))) = prim__mul_Int (eval x) (eval y)
-
--- correct : (e : Expr) -> runAll e = runAll2 e
--- correct (EIntLit x) = Refl
--- correct (EAddition x y) = correct_rhs_1 y x
--- correct (ESubtraction x y) = correct_rhs_2 y x
--- correct (EMultiplication x y) = correct_rhs_3 y x
 total
 addComm : (a : Nat) -> (b : Nat) -> a + b = b + a
 addComm 0 b = sym(plusZeroRightNeutral b)
