@@ -27,12 +27,13 @@ Stack : StackType -> Type
 Stack n = Vect n Int
 
 data Code : StackType -> StackType -> Type where
-    Combine : Code a b -> Code b c -> Code a c
+    Combine : Code a b -> Code b c -> Code a c -- combine two Code into one
     Push : Int -> Code n (S n)
     Add : Code (S (S n)) (S n)
     Sub : Code (S (S n)) (S n)
     Mult : Code (S (S n)) (S n)
     Pop : Code (S n) n
+-- if/else skal have en træ struktur
 
 total
 compile : Expr -> Code k (S k)
@@ -45,9 +46,9 @@ total
 exec : Code n m -> Stack n -> Stack m
 exec (Combine x y) xs = exec y (exec x xs)
 exec (Push x) xs = x::xs
-exec Add (x0::x1::xs) = (x0 + x1) :: xs
+exec Add (x0::x1::xs) = (x1 + x0) :: xs
 exec Sub (x0::x1::xs) = (x1 - x0) :: xs
-exec Mult (x0::x1::xs) = (x0 * x1) :: xs
+exec Mult (x0::x1::xs) = (x1 * x0) :: xs
 exec Pop (x :: xs) = xs
 
 total
@@ -86,31 +87,14 @@ test_both_RunAlls_sub = Refl
 test_both_RunAlls_mul : runAll (10*2) = runAll2 (10*2)
 test_both_RunAlls_mul = Refl
 
-total
-addComm : (a : Nat) -> (b : Nat) -> a + b = b + a
-addComm 0 b = sym(plusZeroRightNeutral b)
-addComm (S k) b = rewrite addComm k b in
-                    plusSuccRightSucc b k
-
-0
-addCommutative : (x, y : Int) -> x + y = y + x
-
-0
-multCommutative : (x, y : Int) -> x * y = y * x
-
-0
-subCommutative : (x, y : Int) -> x - y = y - x
-
 correct : (e : Expr) -> (s : Stack n) -> exec (compile e) s = eval e :: s
 correct (EIntLit x) s = Refl
 correct (EAddition x y) s = rewrite correct x s in 
                             rewrite correct y (eval x :: s) in
-                            rewrite addCommutative (eval y) (eval x) in
                             Refl
 correct (ESubtraction x y) s = rewrite correct x s in 
                             rewrite correct y (eval x :: s) in
                             Refl
 correct (EMultiplication x y) s = rewrite correct x s in 
                             rewrite correct y (eval x :: s) in
-                            rewrite multCommutative (eval y) (eval x) in
                             Refl
