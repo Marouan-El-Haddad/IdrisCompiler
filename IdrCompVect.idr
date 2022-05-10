@@ -72,11 +72,11 @@ runAll2 e = eval(e)
 main : IO ()
 main = ?hole2
 
--- Tests
+-- Test different evaluation path against each other
+test_both_RunAlls2: exec Add (exec (compile 2) (eval 3 :: s)) = (eval 2 + eval 3) :: s
+test_both_RunAlls2 = Refl
 
-test_both_RunAlls_add2 : exec Add (exec (compile 2) (eval 3 :: s)) = (eval 2 + eval 3) :: s
-test_both_RunAlls_add2 = Refl
-
+-- Test runAll against runAll2
 test_both_RunAlls_add : runAll (2+3) = runAll2 (2+3)
 test_both_RunAlls_add = Refl
 
@@ -86,6 +86,54 @@ test_both_RunAlls_sub = Refl
 test_both_RunAlls_mul : runAll (10*2) = runAll2 (10*2)
 test_both_RunAlls_mul = Refl
 
+
+--Test runAll postive result
+test_RunAll_add_posRes : runAll (2+3) = 5
+test_RunAll_add_posRes = Refl
+
+test_RunAll_sub_posRes : runAll (10-3) = 7
+test_RunAll_sub_posRes = Refl
+
+test_RunAll_mul_posRes : runAll (10*2) = 20
+test_RunAll_mul_posRes = Refl
+--Test runAll negative result
+test_RunAll_add_negRes : runAll (-10+3) = -7
+test_RunAll_add_negRes = Refl
+
+test_RunAll_add_negRes2 : runAll (-10+(-3)) = -13
+test_RunAll_add_negRes2 = Refl
+
+test_RunAll_sub_negRes : runAll (2-3) = -1
+test_RunAll_sub_negRes = Refl
+
+test_RunAll_mul_negRes : runAll (-10*2) = -20
+test_RunAll_mul_negRes = Refl
+
+
+--Test runAll2 postive result
+test_RunAll2_add_posRes : runAll2 (2+3) = 5
+test_RunAll2_add_posRes = Refl
+
+test_RunAll2_sub_posRes : runAll2 (10-3) = 7
+test_RunAll2_sub_posRes = Refl
+
+test_RunAll2_mul_posRes : runAll2 (10*2) = 20
+test_RunAll2_mul_posRes = Refl
+--Test runAll2 negative result
+test_RunAll2_add_negRes : runAll2 (-10+3) = -7
+test_RunAll2_add_negRes = Refl
+
+test_RunAll2_add_negRes2 : runAll2 (-10+(-3)) = -13
+test_RunAll2_add_negRes2 = Refl
+
+test_RunAll2_sub_negRes : runAll2 (2-3) = -1
+test_RunAll2_sub_negRes = Refl
+
+test_RunAll2_mul_negRes : runAll2 (-10*2) = -20
+test_RunAll2_mul_negRes = Refl
+
+
+-- Theorem proving the two evaluation path
 correct : (e : Expr) -> (s : Stack n) -> exec (compile e) s = eval e :: s
 correct (EIntLit x) s = Refl
 correct (EAddition x y) s = rewrite correct x s in 
