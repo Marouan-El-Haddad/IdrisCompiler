@@ -5,16 +5,28 @@ data TyExp
     = Tnat 
     | Tbool
 
-data Val: TyExp -> Type where
-  ValTnat: Nat -> Val Tnat
-  ValTbool: Bool -> Val Tbool
-
+Val : TyExp -> Type
+Val Tnat = Nat
+Val Tbool = Bool
 
 data Exp : TyExp -> Type where
   ExpVal : Val t -> Exp t
-  ExpPlus : Exp Tnat -> Exp Tnat -> Exp Tnat
+  ExpAddition : Exp Tnat -> Exp Tnat -> Exp Tnat
+  ExpSubtraction : Exp Tnat -> Exp Tnat -> Exp Tnat
+  ExpMultiplication : Exp Tnat -> Exp Tnat -> Exp Tnat
   ExpIfThenElse : Exp Tbool -> Exp a -> Exp a -> Exp a
 
+eval : Exp t -> Val t
+eval (ExpVal x) = x
+eval (ExpAddition x y) = eval x + eval y
+eval (ExpSubtraction x y) = minus (eval x) (eval y)
+eval (ExpMultiplication x y) = eval x * eval y
+eval (ExpIfThenElse x y z) = case eval x of
+                                  True => eval y
+                                  False => eval z
+
+
+--eval (ExpIfThenElse x y z) = eval z
 
 --So T is a TyExp, 
 --Val T is a concrete Type, 
@@ -31,3 +43,22 @@ data Exp : TyExp -> Type where
 --I'd say the function form is "simpler" if you can get away with it, and I think Idris syntax is really nice in enabling you to "upgrade" 
 --to the data version with low pain if it turns out to be useful 
 --(I think they call it the uniform access principle: note you didn't have to touch Exp to make the change).
+
+
+
+{-
+data TyExp
+    = Tnat 
+    | Tbool
+
+data Val: TyExp -> Type where
+  ValTnat: Nat -> Val Tnat
+  ValTbool: Bool -> Val Tbool
+
+data Exp : TyExp -> Type where
+  ExpVal : Val t -> Exp t
+  ExpAddition : Exp Tnat -> Exp Tnat -> Exp Tnat
+  ExpSubtraction : Exp Tnat -> Exp Tnat -> Exp Tnat
+  ExpMultiplication : Exp Tnat -> Exp Tnat -> Exp Tnat
+  ExpIfThenElse : Exp Tbool -> Exp a -> Exp a -> Exp a
+-}
