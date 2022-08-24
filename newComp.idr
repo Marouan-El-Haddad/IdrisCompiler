@@ -73,7 +73,6 @@ compile (ExpSubtraction x y) = COMBINE (compile x) (COMBINE (compile y) SUB)
 compile (ExpMultiplication x y) = COMBINE (compile x) (COMBINE (compile y) MULT)
 compile (ExpIfThenElse x y z) = COMBINE (compile x) (IfThenElse (compile y) (compile z))
 
-
 total
 evalPath: (e : Exp t) -> Val t
 evalPath e = eval(e)
