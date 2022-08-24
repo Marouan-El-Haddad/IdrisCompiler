@@ -5,6 +5,7 @@ data TyExp
     = Tnat 
     | Tbool
 
+total
 Val : TyExp -> Type
 Val Tnat = Nat
 Val Tbool = Bool
@@ -16,6 +17,7 @@ data Exp : TyExp -> Type where
   ExpMultiplication : Exp Tnat -> Exp Tnat -> Exp Tnat
   ExpIfThenElse : Exp Tbool -> Exp a -> Exp a -> Exp a
 
+total
 eval : Exp t -> Val t
 eval (ExpVal x) = x
 eval (ExpAddition x y) = eval x + eval y
@@ -63,7 +65,7 @@ exec MULT (StackCons x (StackCons y z)) = StackCons (y * x) z
 exec (IfThenElse x z) (StackCons True w) = exec x w
 exec (IfThenElse x z) (StackCons False w) = exec z w
 
-
+total
 compile : Exp t -> Code s (t::s)
 compile (ExpVal x) = PUSH x
 compile (ExpAddition x y) = COMBINE (compile x) (COMBINE (compile y) ADD)
