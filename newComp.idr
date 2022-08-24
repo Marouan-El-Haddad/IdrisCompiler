@@ -64,36 +64,25 @@ exec (IfThenElse x z) (StackCons True w) = exec x w
 exec (IfThenElse x z) (StackCons False w) = exec z w
 
 
+compile : Exp t -> Code s (t::s)
+compile (ExpVal x) = PUSH x
+compile (ExpAddition x y) = COMBINE (compile x) (COMBINE (compile y) ADD)
+compile (ExpSubtraction x y) = COMBINE (compile x) (COMBINE (compile y) SUB)
+compile (ExpMultiplication x y) = COMBINE (compile x) (COMBINE (compile y) MULT)
+compile (ExpIfThenElse x y z) = COMBINE (compile x) (IfThenElse (compile y) (compile z))
+
+--(compile x) COMBINE(IfThenElse (compile y) (compile z))
+
+--Combine (compile x) (Combine (compile y) (IfEq (compile a) (compile b)))
+
 {-
-exec SKIP y = ?exec_rhs_0
-exec (COMBINE x z) y = ?exec_rhs_1
-exec (PUSH x) y = ?exec_rhs_2
-exec POP y = ?exec_rhs_3
-exec ADD y = ?exec_rhs_4
-exec SUB y = ?exec_rhs_5
-exec MULT y = ?exec_rhs_6
-exec (IfThenElse x z) y = ?exec_rhs_7
--}
-
-
-{-exec (Combine x y) xs = exec y (exec x xs)
-exec (Push x) xs = x::xs
-exec Add (x0::x1::xs) = (x1 + x0) :: xs
-exec Sub (x0::x1::xs) = (x1 - x0) :: xs
-exec Mult (x0::x1::xs) = (x1 * x0) :: xs
-exec Pop (x :: xs) = xs
---exec (IfThenElse _ _) _ = ?exec_missing_case_1
--}
-
-
-{-total
-compile : Expr -> Code k (S k)
 compile (EIntLit x) = Push x
 compile (EAddition x y) = Combine (compile x) (Combine (compile y) Add)
 compile (ESubtraction x y) = Combine (compile x) (Combine (compile y) Sub)
 compile (EMultiplication x y) = Combine (compile x) (Combine (compile y) Mult)
 --compile (EIfThenElse x y a b) = ?compile_missing_case_1
 -}
+
 
 --top EmptyStack = ?top_rhs_0
 --top (StackCons x y) = top y
