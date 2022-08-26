@@ -107,7 +107,6 @@ exec GTE (StackCons x (StackCons y z)) = StackCons(gte x y) z
 exec LT (StackCons x (StackCons y z)) = StackCons(lt x y) z
 exec GT (StackCons x (StackCons y z)) = StackCons(gt x y) z
 
-
 total
 compile : Exp t -> Code s (t::s)
 compile (ExpVal x) = PUSH x
