@@ -29,7 +29,7 @@ eval (ExpIfThenElse x y z) = case eval x of
                                   True => eval y
                                   False => eval z
 eval (ExpOr x y) = case eval x of
-                        False => eval x
+                        False => eval y
                         True => True
 eval (ExpAnd x y) = case eval x of
                         True => eval x
@@ -51,6 +51,10 @@ total
 top : StackData (x :: xs) -> Val x
 top (StackCons y z) = y
 
+data BinBoolOp
+    = OR
+    | AND
+
 data Code : StackType n1 -> StackType n2 -> Type where
   SKIP : Code init init 
   COMBINE : Code init mid -> Code mid ret -> Code init ret
@@ -59,9 +63,16 @@ data Code : StackType n1 -> StackType n2 -> Type where
   ADD : Code(Tnat :: Tnat :: init) (Tnat :: init)
   SUB : Code(Tnat :: Tnat :: init) (Tnat :: init)
   MULT : Code(Tnat :: Tnat :: init) (Tnat :: init)
-  IfThenElse : Code n m -> Code n m -> Code(Tbool :: n) m
-  OR : Code(Tbool :: Tbool :: init) (Tbool :: init)
-  AND : Code(Tbool :: Tbool :: init) (Tbool :: init)
+  IFTHENELSE : Code n m -> Code n m -> Code(Tbool :: n) m
+  BINBOOLOP : BinBoolOp -> Code (Tbool :: Tbool :: stk) (Tbool :: stk)
+
+getOp : BinBoolOp -> Bool -> Bool -> Bool
+getOp OR y z = case y of
+                        False => z
+                        True => True
+getOp AND y z = case y of
+                        True => z
+                        False => False
 
 total
 exec : Code n m -> StackData n -> StackData m
@@ -72,9 +83,8 @@ exec POP (StackCons x y) = y
 exec ADD (StackCons x (StackCons y z)) = StackCons (y + x) z
 exec SUB (StackCons x (StackCons y z)) = StackCons (minus y x) z
 exec MULT (StackCons x (StackCons y z)) = StackCons (y * x) z
-exec (IfThenElse true false) (StackCons pred z) = if pred then exec true z else exec false z
-exec OR (StackCons x (StackCons y z)) = StackCons (x || y) z
-exec AND (StackCons x (StackCons y z)) = StackCons (x && y) z
+exec (IFTHENELSE true false) (StackCons pred z) = if pred then exec true z else exec false z
+exec (BINBOOLOP x) (StackCons y (StackCons z w)) = StackCons(getOp x y z) w
 
 total
 compile : Exp t -> Code s (t::s)
@@ -82,9 +92,9 @@ compile (ExpVal x) = PUSH x
 compile (ExpAddition x y) = COMBINE (compile x) (COMBINE (compile y) ADD)
 compile (ExpSubtraction x y) = COMBINE (compile x) (COMBINE (compile y) SUB)
 compile (ExpMultiplication x y) = COMBINE (compile x) (COMBINE (compile y) MULT)
-compile (ExpIfThenElse x y z) = COMBINE (compile x) (IfThenElse (compile y) (compile z))
-compile (ExpOr x y) = COMBINE (compile x) (COMBINE (compile y) OR)
-compile (ExpAnd x y) = COMBINE (compile x) (COMBINE (compile y) AND)
+compile (ExpIfThenElse x y z) = COMBINE (compile x) (IFTHENELSE (compile y) (compile z))
+compile (ExpOr x y) = COMBINE (compile x) (COMBINE (compile y) (BINBOOLOP OR))
+compile (ExpAnd x y) = COMBINE (compile x) (COMBINE (compile y) (BINBOOLOP AND))
 
 total
 evalPath: (e : Exp t) -> Val t
