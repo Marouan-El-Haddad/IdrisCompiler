@@ -22,6 +22,8 @@ data Exp : TyExp -> Type where
   ExpGTE : Exp Tnat -> Exp Tnat -> Exp Tbool
   ExpLT : Exp Tnat -> Exp Tnat -> Exp Tbool
   ExpGT : Exp Tnat -> Exp Tnat -> Exp Tbool
+  ExpEqual : Exp Tnat -> Exp Tnat -> Exp Tbool
+  ExpNotEqual : Exp Tnat -> Exp Tnat -> Exp Tbool
 
 total
 eval : Exp t -> Val t
@@ -43,6 +45,8 @@ eval (ExpLTE x y) = lte (eval x) (eval y)
 eval (ExpGTE x y) = gte (eval x) (eval y)
 eval (ExpLT x y) = lt (eval x) (eval y)
 eval (ExpGT x y) = gt (eval x) (eval y)
+eval (ExpEqual x y) = (eval x) == (eval y)
+eval (ExpNotEqual x y) = (eval x) /= (eval y)
 
 total
 StackDepth : Type
@@ -70,6 +74,10 @@ data CompNatOp
   | LT
   | GT
 
+data EqualOp
+  = EQUAL
+  | NOTEQUAL
+
 data Code : StackType n1 -> StackType n2 -> Type where
   SKIP : Code init init 
   COMBINE : Code init mid -> Code mid ret -> Code init ret
@@ -82,6 +90,7 @@ data Code : StackType n1 -> StackType n2 -> Type where
   BINBOOLOP : BinBoolOp -> Code (Tbool :: Tbool :: stk) (Tbool :: stk)
   NOT : Code(Tbool :: init) (Tbool :: init)
   COMPNATOP : CompNatOp -> Code(Tnat :: Tnat :: init) (Tbool :: init)
+  EQUALOP : EqualOp -> Code(Tnat :: Tnat :: init) (Tbool :: init)
 
 total
 getComp : CompNatOp -> Nat -> Nat -> Bool
@@ -100,6 +109,11 @@ getOp AND y z = case y of
                         False => False
 
 total
+getEqual : EqualOp -> Nat -> Nat -> Bool
+getEqual EQUAL y z = y == z
+getEqual NOTEQUAL y z = y /= z
+
+total
 exec : Code n m -> StackData n -> StackData m
 exec SKIP y = y
 exec (COMBINE x z) y = exec z (exec x y)
@@ -112,6 +126,7 @@ exec (IFTHENELSE true false) (StackCons pred z) = if pred then exec true z else 
 exec (BINBOOLOP x) (StackCons y (StackCons z w)) = StackCons(getOp x y z) w
 exec NOT (StackCons x y) = StackCons (not x) y
 exec (COMPNATOP x) (StackCons y (StackCons z w)) = StackCons(getComp x y z) w
+exec (EQUALOP x) (StackCons y (StackCons z w)) = StackCons(getEqual x y z) w
 
 total
 compile : Exp t -> Code s (t::s)
@@ -127,6 +142,8 @@ compile (ExpLTE x y) = COMBINE (compile x) (COMBINE (compile y) (COMPNATOP LTE))
 compile (ExpGTE x y) = COMBINE (compile x) (COMBINE (compile y) (COMPNATOP GTE))
 compile (ExpLT x y) = COMBINE (compile x) (COMBINE (compile y) (COMPNATOP LT))
 compile (ExpGT x y) = COMBINE (compile x) (COMBINE (compile y) (COMPNATOP GT))
+compile (ExpEqual x y) = COMBINE (compile x) (COMBINE (compile y) (EQUALOP EQUAL))
+compile (ExpNotEqual x y) = COMBINE (compile x) (COMBINE (compile y) (EQUALOP NOTEQUAL))
 
 total
 evalPath: (e : Exp t) -> Val t
