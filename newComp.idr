@@ -16,6 +16,9 @@ data Exp : TyExp -> Type where
   ExpSubtraction : Exp Tnat -> Exp Tnat -> Exp Tnat
   ExpMultiplication : Exp Tnat -> Exp Tnat -> Exp Tnat
   ExpIfThenElse : Exp Tbool -> Exp a -> Exp a -> Exp a
+  ExpOr : Exp Tbool -> Exp Tbool -> Exp Tbool
+  ExpAnd : Exp Tbool -> Exp Tbool -> Exp Tbool
+
 
 total
 eval : Exp t -> Val t
@@ -26,6 +29,12 @@ eval (ExpMultiplication x y) = eval x * eval y
 eval (ExpIfThenElse x y z) = case eval x of
                                   True => eval y
                                   False => eval z
+eval (ExpOr x y) = case eval x of
+                        False => eval x
+                        True => True
+eval (ExpAnd x y) = case eval x of
+                        True => eval x
+                        False => False
 
 total
 StackDepth : Type
@@ -43,6 +52,7 @@ total
 top : StackData (x :: xs) -> Val x
 top (StackCons y z) = y
 
+
 data Code : StackType n1 -> StackType n2 -> Type where
   SKIP : Code init init 
   COMBINE : Code init mid -> Code mid ret -> Code init ret
@@ -52,6 +62,9 @@ data Code : StackType n1 -> StackType n2 -> Type where
   SUB : Code(Tnat :: Tnat :: init) (Tnat :: init)
   MULT : Code(Tnat :: Tnat :: init) (Tnat :: init)
   IfThenElse : Code n m -> Code n m -> Code(Tbool :: n) m
+  OR : Code(Tbool :: Tbool :: init) (Tbool :: init)
+  AND : Code(Tbool :: Tbool :: init) (Tbool :: init)
+
 
 total
 exec : Code n m -> StackData n -> StackData m
@@ -62,8 +75,10 @@ exec POP (StackCons x y) = y
 exec ADD (StackCons x (StackCons y z)) = StackCons (y + x) z
 exec SUB (StackCons x (StackCons y z)) = StackCons (minus y x) z
 exec MULT (StackCons x (StackCons y z)) = StackCons (y * x) z
-exec (IfThenElse x z) (StackCons True w) = exec x w
-exec (IfThenElse x z) (StackCons False w) = exec z w
+exec (IfThenElse true false) (StackCons pred z) = if pred then exec true z else exec false z
+exec OR (StackCons x (StackCons y z)) = StackCons (x || y) z
+exec AND (StackCons x (StackCons y z)) = StackCons (x && y) z
+
 
 total
 compile : Exp t -> Code s (t::s)
@@ -72,6 +87,9 @@ compile (ExpAddition x y) = COMBINE (compile x) (COMBINE (compile y) ADD)
 compile (ExpSubtraction x y) = COMBINE (compile x) (COMBINE (compile y) SUB)
 compile (ExpMultiplication x y) = COMBINE (compile x) (COMBINE (compile y) MULT)
 compile (ExpIfThenElse x y z) = COMBINE (compile x) (IfThenElse (compile y) (compile z))
+compile (ExpOr x y) = COMBINE (compile x) (COMBINE (compile y) OR)
+compile (ExpAnd x y) = COMBINE (compile x) (COMBINE (compile y) AND)
+
 
 total
 evalPath: (e : Exp t) -> Val t
