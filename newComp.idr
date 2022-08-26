@@ -18,6 +18,7 @@ data Exp : TyExp -> Type where
   ExpIfThenElse : Exp Tbool -> Exp a -> Exp a -> Exp a
   ExpOr : Exp Tbool -> Exp Tbool -> Exp Tbool
   ExpAnd : Exp Tbool -> Exp Tbool -> Exp Tbool
+  ExpNot : Exp Tbool -> Exp Tbool
 
 total
 eval : Exp t -> Val t
@@ -34,6 +35,7 @@ eval (ExpOr x y) = case eval x of
 eval (ExpAnd x y) = case eval x of
                         True => eval x
                         False => False
+eval (ExpNot x) = not (eval x)
 
 total
 StackDepth : Type
@@ -65,6 +67,7 @@ data Code : StackType n1 -> StackType n2 -> Type where
   MULT : Code(Tnat :: Tnat :: init) (Tnat :: init)
   IFTHENELSE : Code n m -> Code n m -> Code(Tbool :: n) m
   BINBOOLOP : BinBoolOp -> Code (Tbool :: Tbool :: stk) (Tbool :: stk)
+  NOT : Code(Tbool :: init) (Tbool :: init)
 
 total
 getOp : BinBoolOp -> Bool -> Bool -> Bool
@@ -86,6 +89,7 @@ exec SUB (StackCons x (StackCons y z)) = StackCons (minus y x) z
 exec MULT (StackCons x (StackCons y z)) = StackCons (y * x) z
 exec (IFTHENELSE true false) (StackCons pred z) = if pred then exec true z else exec false z
 exec (BINBOOLOP x) (StackCons y (StackCons z w)) = StackCons(getOp x y z) w
+exec NOT (StackCons x y) = StackCons (not x) y
 
 total
 compile : Exp t -> Code s (t::s)
@@ -96,6 +100,7 @@ compile (ExpMultiplication x y) = COMBINE (compile x) (COMBINE (compile y) MULT)
 compile (ExpIfThenElse x y z) = COMBINE (compile x) (IFTHENELSE (compile y) (compile z))
 compile (ExpOr x y) = COMBINE (compile x) (COMBINE (compile y) (BINBOOLOP OR))
 compile (ExpAnd x y) = COMBINE (compile x) (COMBINE (compile y) (BINBOOLOP AND))
+compile (ExpNot x) = COMBINE (compile x) NOT
 
 total
 evalPath: (e : Exp t) -> Val t
