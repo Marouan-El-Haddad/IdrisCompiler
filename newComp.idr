@@ -19,6 +19,10 @@ data Exp : TyExp -> Type where
   ExpOr : Exp Tbool -> Exp Tbool -> Exp Tbool
   ExpAnd : Exp Tbool -> Exp Tbool -> Exp Tbool
   ExpNot : Exp Tbool -> Exp Tbool
+  ExpLTE : Exp Tnat -> Exp Tnat -> Exp Tbool
+  ExpGTE : Exp Tnat -> Exp Tnat -> Exp Tbool
+  ExpLT : Exp Tnat -> Exp Tnat -> Exp Tbool
+  ExpGT : Exp Tnat -> Exp Tnat -> Exp Tbool
 
 total
 eval : Exp t -> Val t
@@ -36,6 +40,10 @@ eval (ExpAnd x y) = case eval x of
                         True => eval x
                         False => False
 eval (ExpNot x) = not (eval x)
+eval (ExpLTE x y) = lte (eval x) (eval y)
+eval (ExpGTE x y) = gte (eval x) (eval y)
+eval (ExpLT x y) = lt (eval x) (eval y)
+eval (ExpGT x y) = gt (eval x) (eval y)
 
 total
 StackDepth : Type
@@ -68,6 +76,10 @@ data Code : StackType n1 -> StackType n2 -> Type where
   IFTHENELSE : Code n m -> Code n m -> Code(Tbool :: n) m
   BINBOOLOP : BinBoolOp -> Code (Tbool :: Tbool :: stk) (Tbool :: stk)
   NOT : Code(Tbool :: init) (Tbool :: init)
+  LTE : Code(Tnat :: Tnat :: init) (Tbool :: init)
+  GTE : Code(Tnat :: Tnat :: init) (Tbool :: init)
+  LT : Code(Tnat :: Tnat :: init) (Tbool :: init)
+  GT : Code(Tnat :: Tnat :: init) (Tbool :: init)
 
 total
 getOp : BinBoolOp -> Bool -> Bool -> Bool
@@ -90,6 +102,11 @@ exec MULT (StackCons x (StackCons y z)) = StackCons (y * x) z
 exec (IFTHENELSE true false) (StackCons pred z) = if pred then exec true z else exec false z
 exec (BINBOOLOP x) (StackCons y (StackCons z w)) = StackCons(getOp x y z) w
 exec NOT (StackCons x y) = StackCons (not x) y
+exec LTE (StackCons x (StackCons y z)) = StackCons(lte x y) z
+exec GTE (StackCons x (StackCons y z)) = StackCons(gte x y) z
+exec LT (StackCons x (StackCons y z)) = StackCons(lt x y) z
+exec GT (StackCons x (StackCons y z)) = StackCons(gt x y) z
+
 
 total
 compile : Exp t -> Code s (t::s)
@@ -101,6 +118,10 @@ compile (ExpIfThenElse x y z) = COMBINE (compile x) (IFTHENELSE (compile y) (com
 compile (ExpOr x y) = COMBINE (compile x) (COMBINE (compile y) (BINBOOLOP OR))
 compile (ExpAnd x y) = COMBINE (compile x) (COMBINE (compile y) (BINBOOLOP AND))
 compile (ExpNot x) = COMBINE (compile x) NOT
+compile (ExpLTE x y) = COMBINE (compile x) (COMBINE (compile y) LTE)
+compile (ExpGTE x y) = COMBINE (compile x) (COMBINE (compile y) GTE)
+compile (ExpLT x y) = COMBINE (compile x) (COMBINE (compile y) LT)
+compile (ExpGT x y) = COMBINE (compile x) (COMBINE (compile y) GT)
 
 total
 evalPath: (e : Exp t) -> Val t
