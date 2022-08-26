@@ -19,7 +19,6 @@ data Exp : TyExp -> Type where
   ExpOr : Exp Tbool -> Exp Tbool -> Exp Tbool
   ExpAnd : Exp Tbool -> Exp Tbool -> Exp Tbool
 
-
 total
 eval : Exp t -> Val t
 eval (ExpVal x) = x
@@ -52,7 +51,6 @@ total
 top : StackData (x :: xs) -> Val x
 top (StackCons y z) = y
 
-
 data Code : StackType n1 -> StackType n2 -> Type where
   SKIP : Code init init 
   COMBINE : Code init mid -> Code mid ret -> Code init ret
@@ -64,7 +62,6 @@ data Code : StackType n1 -> StackType n2 -> Type where
   IfThenElse : Code n m -> Code n m -> Code(Tbool :: n) m
   OR : Code(Tbool :: Tbool :: init) (Tbool :: init)
   AND : Code(Tbool :: Tbool :: init) (Tbool :: init)
-
 
 total
 exec : Code n m -> StackData n -> StackData m
@@ -79,7 +76,6 @@ exec (IfThenElse true false) (StackCons pred z) = if pred then exec true z else 
 exec OR (StackCons x (StackCons y z)) = StackCons (x || y) z
 exec AND (StackCons x (StackCons y z)) = StackCons (x && y) z
 
-
 total
 compile : Exp t -> Code s (t::s)
 compile (ExpVal x) = PUSH x
@@ -89,7 +85,6 @@ compile (ExpMultiplication x y) = COMBINE (compile x) (COMBINE (compile y) MULT)
 compile (ExpIfThenElse x y z) = COMBINE (compile x) (IfThenElse (compile y) (compile z))
 compile (ExpOr x y) = COMBINE (compile x) (COMBINE (compile y) OR)
 compile (ExpAnd x y) = COMBINE (compile x) (COMBINE (compile y) AND)
-
 
 total
 evalPath: (e : Exp t) -> Val t
