@@ -66,6 +66,7 @@ data Code : StackType n1 -> StackType n2 -> Type where
   IFTHENELSE : Code n m -> Code n m -> Code(Tbool :: n) m
   BINBOOLOP : BinBoolOp -> Code (Tbool :: Tbool :: stk) (Tbool :: stk)
 
+total
 getOp : BinBoolOp -> Bool -> Bool -> Bool
 getOp OR y z = case y of
                         False => z
