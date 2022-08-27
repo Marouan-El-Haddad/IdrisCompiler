@@ -31,15 +31,9 @@ eval (ExpVal x) = x
 eval (ExpAddition x y) = eval x + eval y
 eval (ExpSubtraction x y) = minus (eval x) (eval y)
 eval (ExpMultiplication x y) = eval x * eval y
-eval (ExpIfThenElse x y z) = case eval x of
-                                  True => eval y
-                                  False => eval z
-eval (ExpOr x y) = case eval x of
-                        False => eval y
-                        True => True
-eval (ExpAnd x y) = case eval x of
-                        True => eval x
-                        False => False
+eval (ExpIfThenElse x y z) = if eval x then eval y else eval  z
+eval (ExpOr x y) = eval x || eval y
+eval (ExpAnd x y) = eval x && eval y
 eval (ExpNot x) = not (eval x)
 eval (ExpLTE x y) = lte (eval x) (eval y)
 eval (ExpGTE x y) = gte (eval x) (eval y)
@@ -93,20 +87,16 @@ data Code : StackType n1 -> StackType n2 -> Type where
   EQUALOP : EqualOp -> Code(Tnat :: Tnat :: init) (Tbool :: init)
 
 total
+getOp : BinBoolOp -> Bool -> Bool -> Bool
+getOp OR y z = y || z
+getOp AND y z = y && z
+
+total
 getComp : CompNatOp -> Nat -> Nat -> Bool
 getComp LTE y z = lte y z
 getComp GTE y z = gte y z
 getComp LT y z = lt y z
 getComp GT y z = gt y z
-
-total
-getOp : BinBoolOp -> Bool -> Bool -> Bool
-getOp OR y z = case y of
-                        False => z
-                        True => True
-getOp AND y z = case y of
-                        True => z
-                        False => False
 
 total
 getEqual : EqualOp -> Nat -> Nat -> Bool
