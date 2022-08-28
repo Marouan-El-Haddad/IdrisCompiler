@@ -163,7 +163,6 @@ test_both_Paths_mul : evalPath {t=Tnat} (10*2) = compileExecPath {t=Tnat} (10*2)
 test_both_Paths_mul = Refl
 
 -- Test evalPath against compileExecPath with comparisons (TRUE)
-
 test_both_Paths_IfThenElse_LTE_TRUE : evalPath {t=Tnat} (ExpIfThenElse (ExpLTE 5 5) 50 100) = compileExecPath {t=Tnat} (ExpIfThenElse (ExpLTE 5 5) 50 100)
 test_both_Paths_IfThenElse_LTE_TRUE = Refl
 
@@ -177,7 +176,6 @@ test_both_Paths_IfThenElse_GT_TRUE : evalPath {t=Tnat} (ExpIfThenElse (ExpGT 11 
 test_both_Paths_IfThenElse_GT_TRUE = Refl
 
 -- Test evalPath against compileExecPath with comparisons (FALSE)
-
 test_both_Paths_IfThenElse_LTE_FALSE : evalPath {t=Tnat} (ExpIfThenElse (ExpLTE 6 5) 50 100) = compileExecPath {t=Tnat} (ExpIfThenElse (ExpLTE 6 5) 50 100)
 test_both_Paths_IfThenElse_LTE_FALSE = Refl
 
