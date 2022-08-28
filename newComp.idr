@@ -25,6 +25,15 @@ data Exp : TyExp -> Type where
   ExpEqual : Exp Tnat -> Exp Tnat -> Exp Tbool
   ExpNotEqual : Exp Tnat -> Exp Tnat -> Exp Tbool
 
+Num (Exp Tnat) where
+    (+) = ExpAddition
+    (*) = ExpMultiplication
+    fromInteger = ExpVal . fromInteger
+
+Neg (Exp Tnat) where
+    negate x = 0 - x
+    (-) = ExpSubtraction
+
 total
 eval : Exp t -> Val t
 eval (ExpVal x) = x
@@ -142,3 +151,290 @@ evalPath e = eval(e)
 total
 compileExecPath: (e : Exp t) -> Val t
 compileExecPath e = top(exec(compile(e)) EmptyStack)
+
+-- Test evalPath against compileExecPath
+test_both_Paths_add : evalPath {t=Tnat} (2+3) = compileExecPath {t=Tnat} (2+3)
+test_both_Paths_add = Refl
+
+test_both_Paths_sub : evalPath {t=Tnat} (2-3) = compileExecPath {t=Tnat} (2-3)
+test_both_Paths_sub = Refl
+
+test_both_Paths_mul : evalPath {t=Tnat} (10*2) = compileExecPath {t=Tnat} (10*2)
+test_both_Paths_mul = Refl
+
+test_both_Paths_IfThenElse_LTE_TRUE : evalPath {t=Tnat} (ExpIfThenElse (ExpLTE 5 5) 50 100) = compileExecPath {t=Tnat} (ExpIfThenElse (ExpLTE 5 5) 50 100)
+test_both_Paths_IfThenElse_LTE_TRUE = Refl
+
+test_both_Paths_IfThenElse_GTE_TRUE : evalPath {t=Tnat} (ExpIfThenElse (ExpGTE 5 5) 50 100) = compileExecPath {t=Tnat} (ExpIfThenElse (ExpGTE 5 5) 50 100)
+test_both_Paths_IfThenElse_GTE_TRUE = Refl
+
+--test_both_Paths_IfThenElse_LT_TRUE : evalPath {t=Tnat} (ExpIfThenElse (ExpLT 5 10) 50 100) = compileExecPath {t=Tnat} (ExpIfThenElse (ExpLT 5 10) 50 100)
+--test_both_Paths_IfThenElse_LT_TRUE = Refl
+
+--test_both_Paths_IfThenElse_GT_TRUE : evalPath {t=Tnat} (ExpIfThenElse (ExpGT 11 10) 50 100) = compileExecPath {t=Tnat} (ExpIfThenElse (ExpGT 11 10) 50 100)
+--test_both_Paths_IfThenElse_GT_TRUE = Refl
+
+
+--Test EvalPath postive result
+test_EvalPath_add_posRes : evalPath {t=Tnat} (2+3) = 5
+test_EvalPath_add_posRes = Refl
+
+test_EvalPath_sub_posRes : evalPath {t=Tnat} (10-3) = 7
+test_EvalPath_sub_posRes = Refl
+
+test_EvalPath_mul_posRes : evalPath {t=Tnat} (10*2) = 20
+test_EvalPath_mul_posRes = Refl
+
+test_EvalPath_sub_ZeroIfNeg : evalPath {t=Tnat} (10-120) = 0
+test_EvalPath_sub_ZeroIfNeg = Refl
+
+{- 
+--Test EvalPath negative result
+test_Path_add_negRes : evalPath {t=Tnat} (-10+3) = -7
+test_Path_add_negRes = Refl
+
+test_Path_add_negRes2 : evalPath {t=Tnat} (-10+(-3)) = -13
+test_Path_add_negRes2 = Refl
+
+test_Path_sub_negRes : evalPath {t=Tnat} (2-3) = -1
+test_Path_sub_negRes = Refl
+
+test_Path_mul_negRes : evalPath {t=Tnat} (-10*2) = -20
+test_Path_mul_negRes = Refl
+-}
+
+--Test EvalPath with IfThenElse using comparisons (TRUE)
+test_evalPath_ifThenELse_LTE_TRUE : evalPath {t=Tnat} (ExpIfThenElse (ExpLTE 5 5) 50 100) = 50
+test_evalPath_ifThenELse_LTE_TRUE = Refl
+
+test_evalPath_ifThenELse_GTE_TRUE : evalPath {t=Tnat} (ExpIfThenElse (ExpGTE 5 5) 50 100) = 50
+test_evalPath_ifThenELse_GTE_TRUE = Refl
+
+test_evalPath_ifThenELse_LT_TRUE : evalPath {t=Tnat} (ExpIfThenElse (ExpLT 5 10) 50 100) = 50
+test_evalPath_ifThenELse_LT_TRUE = Refl
+
+test_evalPath_ifThenELse_GT_TRUE : evalPath {t=Tnat} (ExpIfThenElse (ExpGT 11 10) 50 100) = 50
+test_evalPath_ifThenELse_GT_TRUE = Refl
+
+--Test EvalPath with IfThenElse using comparisons (FALSE)
+test_evalPath_ifThenELse_LTE_FALSE : evalPath {t=Tnat} (ExpIfThenElse (ExpLTE 6 5) 50 100) = 100
+test_evalPath_ifThenELse_LTE_FALSE = Refl
+
+test_evalPath_ifThenELse_GTE_FALSE : evalPath {t=Tnat} (ExpIfThenElse (ExpGTE 4 5) 50 100) = 100
+test_evalPath_ifThenELse_GTE_FALSE = Refl
+
+test_evalPath_ifThenELse_LT_FALSE : evalPath {t=Tnat} (ExpIfThenElse (ExpLT 11 10) 50 100) = 100
+test_evalPath_ifThenELse_LT_FALSE = Refl
+
+test_evalPath_ifThenELse_GT_FALSE : evalPath {t=Tnat} (ExpIfThenElse (ExpGT 9 10) 50 100) = 100
+test_evalPath_ifThenELse_GT_FALSE = Refl
+
+--Test EvalPath with IfThenElse using comparisons and NOT (TRUE)
+test_evalPath_ifThenELse_LTE_NOT_TRUE : evalPath {t=Tnat} (ExpIfThenElse (ExpNot (ExpLTE 10 5)) 50 100) = 50
+test_evalPath_ifThenELse_LTE_NOT_TRUE = Refl
+
+test_evalPath_ifThenELse_GTE_NOT_TRUE : evalPath {t=Tnat} (ExpIfThenElse (ExpNot (ExpGTE 4 5)) 50 100) = 50
+test_evalPath_ifThenELse_GTE_NOT_TRUE = Refl
+
+test_evalPath_ifThenELse_LT_NOT_TRUE : evalPath {t=Tnat} (ExpIfThenElse (ExpNot(ExpLT 11 10)) 50 100) = 50
+test_evalPath_ifThenELse_LT_NOT_TRUE = Refl
+
+test_evalPath_ifThenELse_GT_NOT_TRUE : evalPath {t=Tnat} (ExpIfThenElse (ExpNot(ExpGT 4 5)) 50 100) = 50
+test_evalPath_ifThenELse_GT_NOT_TRUE = Refl
+
+--Test EvalPath with IfThenElse using comparisons and NOT (FALSE)
+test_evalPath_ifThenELse_LTE_NOT_FALSE : evalPath {t=Tnat} (ExpIfThenElse (ExpNot (ExpLTE 5 5)) 50 100) = 100
+test_evalPath_ifThenELse_LTE_NOT_FALSE = Refl
+
+test_evalPath_ifThenELse_GTE_NOT_FALSE : evalPath {t=Tnat} (ExpIfThenElse (ExpNot (ExpGTE 5 5)) 50 100) = 100
+test_evalPath_ifThenELse_GTE_NOT_FALSE = Refl
+
+test_evalPath_ifThenELse_LT_NOT_FALSE : evalPath {t=Tnat} (ExpIfThenElse (ExpNot(ExpLT 5 10)) 50 100) = 100
+test_evalPath_ifThenELse_LT_NOT_FALSE = Refl
+
+test_evalPath_ifThenELse_GT_NOT_FALSE : evalPath {t=Tnat} (ExpIfThenElse (ExpNot(ExpGT 10 5)) 50 100) = 100
+test_evalPath_ifThenELse_GT_NOT_FALSE = Refl
+
+--Test EvalPath with IfThenElse using comparisons and OR (TRUE)
+test_evalPath_ifThenELse_LTE_OR_TRUE : evalPath {t=Tnat} (ExpIfThenElse (ExpOr (ExpLTE 10 5) (ExpLTE 5 5)) 50 100) = 50
+test_evalPath_ifThenELse_LTE_OR_TRUE = Refl
+
+test_evalPath_ifThenELse_GTE_OR_TRUE : evalPath {t=Tnat} (ExpIfThenElse (ExpOr (ExpGTE 1 5) (ExpGTE 5 5)) 50 100)  = 50
+test_evalPath_ifThenELse_GTE_OR_TRUE = Refl
+
+test_evalPath_ifThenELse_LT_OR_TRUE : evalPath {t=Tnat} (ExpIfThenElse (ExpOr (ExpLT 10 5) (ExpLT 4 5)) 50 100)  = 50
+test_evalPath_ifThenELse_LT_OR_TRUE = Refl
+
+test_evalPath_ifThenELse_GT_OR_TRUE : evalPath {t=Tnat} (ExpIfThenElse (ExpOr (ExpGT 1 5) (ExpGT 6 5)) 50 100)  = 50
+test_evalPath_ifThenELse_GT_OR_TRUE = Refl
+
+--Test EvalPath with IfThenElse using comparisons and OR (FALSE)
+test_evalPath_ifThenELse_LTE_OR_FALSE : evalPath {t=Tnat} (ExpIfThenElse (ExpOr (ExpLTE 6 5) (ExpLTE 11 10)) 50 100) = 100
+test_evalPath_ifThenELse_LTE_OR_FALSE = Refl
+
+test_evalPath_ifThenELse_GTE_OR_FALSE : evalPath {t=Tnat} (ExpIfThenElse (ExpOr (ExpGTE 4 5) (ExpGTE 4 5)) 50 100)  = 100
+test_evalPath_ifThenELse_GTE_OR_FALSE = Refl
+
+test_evalPath_ifThenELse_LT_OR_FALSE : evalPath {t=Tnat} (ExpIfThenElse (ExpOr (ExpLT 6 5) (ExpLT 6 5)) 50 100)  = 100
+test_evalPath_ifThenELse_LT_OR_FALSE = Refl
+
+test_evalPath_ifThenELse_GT_OR_FALSE : evalPath {t=Tnat} (ExpIfThenElse (ExpOr (ExpGT 1 5) (ExpGT 4 5)) 50 100)  = 100
+test_evalPath_ifThenELse_GT_OR_FALSE = Refl
+
+--Test EvalPath with IfThenElse using comparisons and AND (TRUE)
+test_evalPath_ifThenELse_LTE_AND_TRUE : evalPath {t=Tnat} (ExpIfThenElse (ExpAnd (ExpLTE 5 5) (ExpLTE 10 10)) 50 100) = 50
+test_evalPath_ifThenELse_LTE_AND_TRUE = Refl
+
+test_evalPath_ifThenELse_GTE_AND_TRUE : evalPath {t=Tnat} (ExpIfThenElse (ExpAnd (ExpGTE 5 5) (ExpGTE 10 10)) 50 100)  = 50
+test_evalPath_ifThenELse_GTE_AND_TRUE = Refl
+
+test_evalPath_ifThenELse_LT_AND_TRUE : evalPath {t=Tnat} (ExpIfThenElse (ExpAnd (ExpLT 1 5) (ExpLT 4 5)) 50 100)  = 50
+test_evalPath_ifThenELse_LT_AND_TRUE = Refl
+
+test_evalPath_ifThenELse_GT_AND_TRUE : evalPath {t=Tnat} (ExpIfThenElse (ExpAnd (ExpGT 10 5) (ExpGT 6 5)) 50 100)  = 50
+test_evalPath_ifThenELse_GT_AND_TRUE = Refl
+
+--Test EvalPath with IfThenElse using comparisons and AND (FALSE)
+test_evalPath_ifThenELse_LTE_AND_FALSE : evalPath {t=Tnat} (ExpIfThenElse (ExpAnd (ExpLTE 6 5) (ExpLTE 11 10)) 50 100) = 100
+test_evalPath_ifThenELse_LTE_AND_FALSE = Refl
+
+test_evalPath_ifThenELse_GTE_AND_FALSE : evalPath {t=Tnat} (ExpIfThenElse (ExpAnd (ExpGTE 4 5) (ExpGTE 9 10)) 50 100)  = 100
+test_evalPath_ifThenELse_GTE_AND_FALSE = Refl
+
+test_evalPath_ifThenELse_LT_AND_FALSE : evalPath {t=Tnat} (ExpIfThenElse (ExpAnd (ExpLT 6 5) (ExpLT 6 5)) 50 100)  = 100
+test_evalPath_ifThenELse_LT_AND_FALSE = Refl
+
+test_evalPath_ifThenELse_GT_AND_FALSE : evalPath {t=Tnat} (ExpIfThenElse (ExpAnd (ExpGT 4 5) (ExpGT 4 5)) 50 100)  = 100
+test_evalPath_ifThenELse_GT_AND_FALSE = Refl
+
+--Test compileExecPath postive result
+test_compileExecPath_add_posRes : compileExecPath {t=Tnat} (2+3) = 5
+test_compileExecPath_add_posRes = Refl
+
+test_compileExecPath_sub_posRes : compileExecPath {t=Tnat} (10-3) = 7
+test_compileExecPath_sub_posRes = Refl
+
+test_compileExecPath_mul_posRes : compileExecPath {t=Tnat} (10*2) = 20
+test_compileExecPath_mul_posRes = Refl
+
+test_compileExecPath_sub_ZeroIfNeg : compileExecPath {t=Tnat} (10-120) = 0
+test_compileExecPath_sub_ZeroIfNeg = Refl
+
+{-
+--Test compileExecPath negative result
+test_compileExecPath_add_negRes : compileExecPath {t=Tnat} (-10+3) = -7
+test_compileExecPath_add_negRes = Refl
+
+test_compileExecPath_add_negRes2 : compileExecPath {t=Tnat} (-10+(-3)) = -13
+test_compileExecPath_add_negRes2 = Refl
+
+test_compileExecPath_sub_negRes : compileExecPath {t=Tnat} (2-3) = -1
+test_compileExecPath_sub_negRes = Refl
+
+test_compileExecPath_mul_negRes : compileExecPath {t=Tnat} (-10*2) = -20
+test_compileExecPath_mul_negRes = Refl
+-}
+
+--Test compileExecPath with IfThenElse using comparisons (TRUE)
+test_compileExecPath_ifThenELse_LTE_TRUE : compileExecPath {t=Tnat} (ExpIfThenElse (ExpLTE 5 5) 50 100) = 50
+test_compileExecPath_ifThenELse_LTE_TRUE = Refl
+
+test_compileExecPath_ifThenELse_GTE_TRUE : compileExecPath {t=Tnat} (ExpIfThenElse (ExpGTE 5 5) 50 100) = 50
+test_compileExecPath_ifThenELse_GTE_TRUE = Refl
+{- 
+test_compileExecPath_ifThenELse_LT_TRUE : compileExecPath {t=Tnat} (ExpIfThenElse (ExpLT 5 10) 50 100) = 50
+test_compileExecPath_ifThenELse_LT_TRUE = Refl
+
+test_compileExecPath_ifThenELse_GT_TRUE : compileExecPath {t=Tnat} (ExpIfThenElse (ExpGT 11 10) 50 100) = 50
+test_compileExecPath_ifThenELse_GT_TRUE = Refl
+
+--Test compileExecPath with IfThenElse using comparisons (FALSE)
+test_compileExecPath_ifThenELse_LTE_FALSE : compileExecPath {t=Tnat} (ExpIfThenElse (ExpLTE 6 5) 50 100) = 100
+test_compileExecPath_ifThenELse_LTE_FALSE = Refl
+
+test_compileExecPath_ifThenELse_GTE_FALSE : compileExecPath {t=Tnat} (ExpIfThenElse (ExpGTE 4 5) 50 100) = 100
+test_compileExecPath_ifThenELse_GTE_FALSE = Refl
+
+test_compileExecPath_ifThenELse_LT_FALSE : compileExecPath {t=Tnat} (ExpIfThenElse (ExpLT 11 10) 50 100) = 100
+test_compileExecPath_ifThenELse_LT_FALSE = Refl
+
+test_compileExecPath_ifThenELse_GT_FALSE : compileExecPath {t=Tnat} (ExpIfThenElse (ExpGT 9 10) 50 100) = 100
+test_compileExecPath_ifThenELse_GT_FALSE = Refl
+
+--Test compileExecPath with IfThenElse using comparisons and NOT (TRUE)
+test_compileExecPath_ifThenELse_LTE_NOT_TRUE : compileExecPath {t=Tnat} (ExpIfThenElse (ExpNot (ExpLTE 10 5)) 50 100) = 50
+test_compileExecPath_ifThenELse_LTE_NOT_TRUE = Refl
+
+test_compileExecPath_ifThenELse_GTE_NOT_TRUE : compileExecPath {t=Tnat} (ExpIfThenElse (ExpNot (ExpGTE 4 5)) 50 100) = 50
+test_compileExecPath_ifThenELse_GTE_NOT_TRUE = Refl
+
+test_compileExecPath_ifThenELse_LT_NOT_TRUE : compileExecPath {t=Tnat} (ExpIfThenElse (ExpNot(ExpLT 11 10)) 50 100) = 50
+test_compileExecPath_ifThenELse_LT_NOT_TRUE = Refl
+
+test_compileExecPath_ifThenELse_GT_NOT_TRUE : compileExecPath {t=Tnat} (ExpIfThenElse (ExpNot(ExpGT 4 5)) 50 100) = 50
+test_compileExecPath_ifThenELse_GT_NOT_TRUE = Refl
+
+--Test compileExecPath with IfThenElse using comparisons and NOT (FALSE)
+test_compileExecPath_ifThenELse_LTE_NOT_FALSE : compileExecPath {t=Tnat} (ExpIfThenElse (ExpNot (ExpLTE 5 5)) 50 100) = 100
+test_compileExecPath_ifThenELse_LTE_NOT_FALSE = Refl
+
+test_compileExecPath_ifThenELse_GTE_NOT_FALSE : compileExecPath {t=Tnat} (ExpIfThenElse (ExpNot (ExpGTE 5 5)) 50 100) = 100
+test_compileExecPath_ifThenELse_GTE_NOT_FALSE = Refl
+
+test_compileExecPath_ifThenELse_LT_NOT_FALSE : compileExecPath {t=Tnat} (ExpIfThenElse (ExpNot(ExpLT 5 10)) 50 100) = 100
+test_compileExecPath_ifThenELse_LT_NOT_FALSE = Refl
+
+test_compileExecPath_ifThenELse_GT_NOT_FALSE : compileExecPath {t=Tnat} (ExpIfThenElse (ExpNot(ExpGT 10 5)) 50 100) = 100
+test_compileExecPath_ifThenELse_GT_NOT_FALSE = Refl
+
+--Test compileExecPath with IfThenElse using comparisons and OR (TRUE)
+test_compileExecPath_ifThenELse_LTE_OR_TRUE : compileExecPath {t=Tnat} (ExpIfThenElse (ExpOr (ExpLTE 10 5) (ExpLTE 5 5)) 50 100) = 50
+test_compileExecPath_ifThenELse_LTE_OR_TRUE = Refl
+
+test_compileExecPath_ifThenELse_GTE_OR_TRUE : compileExecPath {t=Tnat} (ExpIfThenElse (ExpOr (ExpGTE 1 5) (ExpGTE 5 5)) 50 100)  = 50
+test_compileExecPath_ifThenELse_GTE_OR_TRUE = Refl
+
+test_compileExecPath_ifThenELse_LT_OR_TRUE : compileExecPath {t=Tnat} (ExpIfThenElse (ExpOr (ExpLT 10 5) (ExpLT 4 5)) 50 100)  = 50
+test_compileExecPath_ifThenELse_LT_OR_TRUE = Refl
+
+test_compileExecPath_ifThenELse_GT_OR_TRUE : compileExecPath {t=Tnat} (ExpIfThenElse (ExpOr (ExpGT 1 5) (ExpGT 6 5)) 50 100)  = 50
+test_compileExecPath_ifThenELse_GT_OR_TRUE = Refl
+
+--Test compileExecPath with IfThenElse using comparisons and OR (FALSE)
+test_compileExecPath_ifThenELse_LTE_OR_FALSE : compileExecPath {t=Tnat} (ExpIfThenElse (ExpOr (ExpLTE 6 5) (ExpLTE 11 10)) 50 100) = 100
+test_compileExecPath_ifThenELse_LTE_OR_FALSE = Refl
+
+test_compileExecPath_ifThenELse_GTE_OR_FALSE : compileExecPath {t=Tnat} (ExpIfThenElse (ExpOr (ExpGTE 4 5) (ExpGTE 4 5)) 50 100)  = 100
+test_compileExecPath_ifThenELse_GTE_OR_FALSE = Refl
+
+test_compileExecPath_ifThenELse_LT_OR_FALSE : compileExecPath {t=Tnat} (ExpIfThenElse (ExpOr (ExpLT 6 5) (ExpLT 6 5)) 50 100)  = 100
+test_compileExecPath_ifThenELse_LT_OR_FALSE = Refl
+
+test_compileExecPath_ifThenELse_GT_OR_FALSE : compileExecPath {t=Tnat} (ExpIfThenElse (ExpOr (ExpGT 1 5) (ExpGT 4 5)) 50 100)  = 100
+test_compileExecPath_ifThenELse_GT_OR_FALSE = Refl
+
+--Test compileExecPath with IfThenElse using comparisons and AND (TRUE)
+test_compileExecPath_ifThenELse_LTE_AND_TRUE : compileExecPath {t=Tnat} (ExpIfThenElse (ExpAnd (ExpLTE 5 5) (ExpLTE 10 10)) 50 100) = 50
+test_compileExecPath_ifThenELse_LTE_AND_TRUE = Refl
+
+test_compileExecPath_ifThenELse_GTE_AND_TRUE : compileExecPath {t=Tnat} (ExpIfThenElse (ExpAnd (ExpGTE 5 5) (ExpGTE 10 10)) 50 100)  = 50
+test_compileExecPath_ifThenELse_GTE_AND_TRUE = Refl
+
+test_compileExecPath_ifThenELse_LT_AND_TRUE : compileExecPath {t=Tnat} (ExpIfThenElse (ExpAnd (ExpLT 1 5) (ExpLT 4 5)) 50 100)  = 50
+test_compileExecPath_ifThenELse_LT_AND_TRUE = Refl
+
+test_compileExecPath_ifThenELse_GT_AND_TRUE : compileExecPath {t=Tnat} (ExpIfThenElse (ExpAnd (ExpGT 10 5) (ExpGT 6 5)) 50 100)  = 50
+test_compileExecPath_ifThenELse_GT_AND_TRUE = Refl
+
+--Test compileExecPath with IfThenElse using comparisons and AND (FALSE)
+test_compileExecPath_ifThenELse_LTE_AND_FALSE : compileExecPath {t=Tnat} (ExpIfThenElse (ExpAnd (ExpLTE 6 5) (ExpLTE 11 10)) 50 100) = 100
+test_compileExecPath_ifThenELse_LTE_AND_FALSE = Refl
+
+test_compileExecPath_ifThenELse_GTE_AND_FALSE : compileExecPath {t=Tnat} (ExpIfThenElse (ExpAnd (ExpGTE 4 5) (ExpGTE 9 10)) 50 100)  = 100
+test_compileExecPath_ifThenELse_GTE_AND_FALSE = Refl
+
+test_compileExecPath_ifThenELse_LT_AND_FALSE : compileExecPath {t=Tnat} (ExpIfThenElse (ExpAnd (ExpLT 6 5) (ExpLT 6 5)) 50 100)  = 100
+test_compileExecPath_ifThenELse_LT_AND_FALSE = Refl
+
+test_compileExecPath_ifThenELse_GT_AND_FALSE : compileExecPath {t=Tnat} (ExpIfThenElse (ExpAnd (ExpGT 4 5) (ExpGT 4 5)) 50 100)  = 100
+test_compileExecPath_ifThenELse_GT_AND_FALSE = Refl
