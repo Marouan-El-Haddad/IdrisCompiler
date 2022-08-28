@@ -60,12 +60,12 @@ StackType : StackDepth -> Type
 StackType n = Vect n TyExp
 
 data StackData : StackType n -> Type where
-  EmptyStack : StackData Nil
-  StackCons : Val x -> StackData xs -> StackData (x :: xs)
+  Nil : StackData Nil
+  (::) : Val x -> StackData xs -> StackData (x :: xs)
 
 total
 top : StackData (x :: xs) -> Val x
-top (StackCons y z) = y
+top (y :: z) = y
 
 data BinBoolOp
     = OR
@@ -116,16 +116,16 @@ total
 exec : Code n m -> StackData n -> StackData m
 exec SKIP y = y
 exec (COMBINE x z) y = exec z (exec x y)
-exec (PUSH x) y = StackCons x y
-exec POP (StackCons x y) = y
-exec ADD (StackCons x (StackCons y z)) = StackCons (y + x) z
-exec SUB (StackCons x (StackCons y z)) = StackCons (minus y x) z
-exec MULT (StackCons x (StackCons y z)) = StackCons (y * x) z
-exec (IFTHENELSE true false) (StackCons pred z) = if pred then exec true z else exec false z
-exec (BINBOOLOP x) (StackCons y (StackCons z w)) = StackCons(getOp x y z) w
-exec NOT (StackCons x y) = StackCons (not x) y
-exec (COMPNATOP x) (StackCons y (StackCons z w)) = StackCons(getComp x y z) w
-exec (EQUALOP x) (StackCons y (StackCons z w)) = StackCons(getEqual x y z) w
+exec (PUSH x) y = x :: y
+exec POP (x :: y) = y
+exec ADD (x :: y :: z) = (y + x) :: z
+exec SUB (x :: y :: z) = (minus y x) :: z
+exec MULT (x :: y :: z) = (y * x) :: z
+exec (IFTHENELSE true false) (pred :: z) = if pred then exec true z else exec false z
+exec (BINBOOLOP x) (y :: z :: w) = (getOp x z y) :: w
+exec NOT (x :: y) = (not x) :: y
+exec (COMPNATOP x) (y :: z :: w) = (getComp x z y) :: w
+exec (EQUALOP x) (y :: z :: w) = (getEqual x z y) :: w
 
 total
 compile : Exp t -> Code s (t::s)
@@ -150,9 +150,9 @@ evalPath e = eval(e)
 
 total
 compileExecPath: (e : Exp t) -> Val t
-compileExecPath e = top(exec(compile(e)) EmptyStack)
+compileExecPath e = top(exec(compile(e)) Nil)
 
--- Test evalPath against compileExecPath
+-- Test evalPath against compileExecPath (arithmetic operations)
 test_both_Paths_add : evalPath {t=Tnat} (2+3) = compileExecPath {t=Tnat} (2+3)
 test_both_Paths_add = Refl
 
@@ -162,17 +162,33 @@ test_both_Paths_sub = Refl
 test_both_Paths_mul : evalPath {t=Tnat} (10*2) = compileExecPath {t=Tnat} (10*2)
 test_both_Paths_mul = Refl
 
+-- Test evalPath against compileExecPath with comparisons (TRUE)
+
 test_both_Paths_IfThenElse_LTE_TRUE : evalPath {t=Tnat} (ExpIfThenElse (ExpLTE 5 5) 50 100) = compileExecPath {t=Tnat} (ExpIfThenElse (ExpLTE 5 5) 50 100)
 test_both_Paths_IfThenElse_LTE_TRUE = Refl
 
 test_both_Paths_IfThenElse_GTE_TRUE : evalPath {t=Tnat} (ExpIfThenElse (ExpGTE 5 5) 50 100) = compileExecPath {t=Tnat} (ExpIfThenElse (ExpGTE 5 5) 50 100)
 test_both_Paths_IfThenElse_GTE_TRUE = Refl
 
---test_both_Paths_IfThenElse_LT_TRUE : evalPath {t=Tnat} (ExpIfThenElse (ExpLT 5 10) 50 100) = compileExecPath {t=Tnat} (ExpIfThenElse (ExpLT 5 10) 50 100)
---test_both_Paths_IfThenElse_LT_TRUE = Refl
+test_both_Paths_IfThenElse_LT_TRUE : evalPath {t=Tnat} (ExpIfThenElse (ExpLT 5 10) 50 100) = compileExecPath {t=Tnat} (ExpIfThenElse (ExpLT 5 10) 50 100)
+test_both_Paths_IfThenElse_LT_TRUE = Refl
 
---test_both_Paths_IfThenElse_GT_TRUE : evalPath {t=Tnat} (ExpIfThenElse (ExpGT 11 10) 50 100) = compileExecPath {t=Tnat} (ExpIfThenElse (ExpGT 11 10) 50 100)
---test_both_Paths_IfThenElse_GT_TRUE = Refl
+test_both_Paths_IfThenElse_GT_TRUE : evalPath {t=Tnat} (ExpIfThenElse (ExpGT 11 10) 50 100) = compileExecPath {t=Tnat} (ExpIfThenElse (ExpGT 11 10) 50 100)
+test_both_Paths_IfThenElse_GT_TRUE = Refl
+
+-- Test evalPath against compileExecPath with comparisons (FALSE)
+
+test_both_Paths_IfThenElse_LTE_FALSE : evalPath {t=Tnat} (ExpIfThenElse (ExpLTE 6 5) 50 100) = compileExecPath {t=Tnat} (ExpIfThenElse (ExpLTE 6 5) 50 100)
+test_both_Paths_IfThenElse_LTE_FALSE = Refl
+
+test_both_Paths_IfThenElse_GTE_FALSE : evalPath {t=Tnat} (ExpIfThenElse (ExpGTE 4 5) 50 100) = compileExecPath {t=Tnat} (ExpIfThenElse (ExpGTE 4 5) 50 100)
+test_both_Paths_IfThenElse_GTE_FALSE = Refl
+
+test_both_Paths_IfThenElse_LT_FALSE : evalPath {t=Tnat} (ExpIfThenElse (ExpLT 11 10) 50 100) = compileExecPath {t=Tnat} (ExpIfThenElse (ExpLT 11 10) 50 100)
+test_both_Paths_IfThenElse_LT_FALSE = Refl
+
+test_both_Paths_IfThenElse_GT_FALSE : evalPath {t=Tnat} (ExpIfThenElse (ExpGT 9 10) 50 100) = compileExecPath {t=Tnat} (ExpIfThenElse (ExpGT 9 10) 50 100)
+test_both_Paths_IfThenElse_GT_FALSE = Refl
 
 --Test EvalPath postive result
 test_EvalPath_add_posRes : evalPath {t=Tnat} (2+3) = 5
@@ -184,6 +200,7 @@ test_EvalPath_sub_posRes = Refl
 test_EvalPath_mul_posRes : evalPath {t=Tnat} (10*2) = 20
 test_EvalPath_mul_posRes = Refl
 
+--Test EvalPath neg result equal to zero
 test_EvalPath_sub_ZeroIfNeg : evalPath {t=Tnat} (10-120) = 0
 test_EvalPath_sub_ZeroIfNeg = Refl
 
@@ -342,11 +359,13 @@ test_compileExecPath_add_negRes = Refl
 
 test_compileExecPath_add_negRes2 : compileExecPath {t=Tnat} (-10+(-3)) = -13
 test_compileExecPath_add_negRes2 = Refl
+--Test EvalPath with IfThenElse using NotEqual (TRUE)
+test_evalPath_ifThenELse_NOTEQUAL_TRUE : evalPath {t=Tnat} (ExpIfThenElse (ExpNotEqual 6 5) 50 100) = 50
+test_evalPath_ifThenELse_NOTEQUAL_TRUE = Refl
 
-test_compileExecPath_sub_negRes : compileExecPath {t=Tnat} (2-3) = -1
-test_compileExecPath_sub_negRes = Refl
-
-test_compileExecPath_mul_negRes : compileExecPath {t=Tnat} (-10*2) = -20
+--Test EvalPath with IfThenElse using NotEqual (FALSE)
+test_evalPath_ifThenELse_NOTEQUAL_FALSE : evalPath {t=Tnat} (ExpIfThenElse (ExpNotEqual 5 5) 50 100) = 100
+test_evalPath_ifThenELse_NOTEQUAL_FALSE = ReflcompileExecPath_mul_negRes : compileExecPath {t=Tnat} (-10*2) = -20
 test_compileExecPath_mul_negRes = Refl
 -}
 
@@ -356,7 +375,7 @@ test_compileExecPath_ifThenELse_LTE_TRUE = Refl
 
 test_compileExecPath_ifThenELse_GTE_TRUE : compileExecPath {t=Tnat} (ExpIfThenElse (ExpGTE 5 5) 50 100) = 50
 test_compileExecPath_ifThenELse_GTE_TRUE = Refl
-{- 
+
 test_compileExecPath_ifThenELse_LT_TRUE : compileExecPath {t=Tnat} (ExpIfThenElse (ExpLT 5 10) 50 100) = 50
 test_compileExecPath_ifThenELse_LT_TRUE = Refl
 
@@ -453,3 +472,11 @@ test_compileExecPath_ifThenELse_LT_AND_FALSE = Refl
 
 test_compileExecPath_ifThenELse_GT_AND_FALSE : compileExecPath {t=Tnat} (ExpIfThenElse (ExpAnd (ExpGT 4 5) (ExpGT 4 5)) 50 100)  = 100
 test_compileExecPath_ifThenELse_GT_AND_FALSE = Refl
+
+--Test EvalPath with IfThenElse using NotEqual (TRUE)
+test_compileExecPath_ifThenELse_NOTEQUAL_TRUE : compileExecPath {t=Tnat} (ExpIfThenElse (ExpNotEqual 6 5) 50 100) = 50
+test_compileExecPath_ifThenELse_NOTEQUAL_TRUE = Refl
+
+--Test EvalPath with IfThenElse using NotEqual (FALSE)
+test_compileExecPath_ifThenELse_NOTEQUAL_FALSE : compileExecPath {t=Tnat} (ExpIfThenElse (ExpNotEqual 5 5) 50 100) = 100
+test_compileExecPath_ifThenELse_NOTEQUAL_FALSE = Refl
