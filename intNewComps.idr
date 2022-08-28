@@ -154,18 +154,15 @@ total
 compileExecPath: (e : Exp t) -> Val t
 compileExecPath e = top(exec(compile(e)) Nil)
 
-
 -- Test evalPath against compileExecPath (arithmetic operations)
 test_both_Paths_add : evalPath {t=Tint} (2+3) = compileExecPath {t=Tint} (2+3)
 test_both_Paths_add = Refl
-
 
 test_both_Paths_sub : evalPath {t=Tint} (2-3) = compileExecPath {t=Tint} (2-3)
 test_both_Paths_sub = Refl
 
 test_both_Paths_mul : evalPath {t=Tint} (10*2) = compileExecPath {t=Tint} (10*2)
 test_both_Paths_mul = Refl
-
 
 -- Test evalPath against compileExecPath with comparisons (TRUE)
 test_both_Paths_IfThenElse_LTE_TRUE : evalPath {t=Tint} (ExpIfThenElse (ExpLTE 5 5) 50 100) = compileExecPath {t=Tint} (ExpIfThenElse (ExpLTE 5 5) 50 100)
@@ -207,7 +204,6 @@ test_EvalPath_mul_posRes = Refl
 test_EvalPath_sub_ZeroIfNeg : evalPath {t=Tint} (10-120) = -110
 test_EvalPath_sub_ZeroIfNeg = Refl
 
-
 --Test EvalPath negative result
 test_Path_add_negRes : evalPath {t=Tint} (-10+3) = -7
 test_Path_add_negRes = Refl
@@ -220,7 +216,6 @@ test_Path_sub_negRes = Refl
 
 test_Path_mul_negRes : evalPath {t=Tint} (-10*2) = -20
 test_Path_mul_negRes = Refl
-
 
 --Test EvalPath with IfThenElse using comparisons (TRUE)
 test_evalPath_ifThenELse_LTE_TRUE : evalPath {t=Tint} (ExpIfThenElse (ExpLTE 5 5) 50 100) = 50
@@ -354,7 +349,6 @@ test_compileExecPath_mul_posRes = Refl
 
 test_compileExecPath_sub_ZeroIfNeg : compileExecPath {t=Tint} (10-120) = -110
 test_compileExecPath_sub_ZeroIfNeg = Refl
-
 
 --Test compileExecPath negative result
 test_compileExecPath_add_negRes : compileExecPath {t=Tint} (-10+3) = -7
