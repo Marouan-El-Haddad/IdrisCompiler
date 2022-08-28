@@ -350,21 +350,16 @@ test_compileExecPath_mul_posRes = Refl
 test_compileExecPath_sub_ZeroIfNeg : compileExecPath {t=Tnat} (10-120) = 0
 test_compileExecPath_sub_ZeroIfNeg = Refl
 
-{-
+{- 
 --Test compileExecPath negative result
 test_compileExecPath_add_negRes : compileExecPath {t=Tnat} (-10+3) = -7
 test_compileExecPath_add_negRes = Refl
 
 test_compileExecPath_add_negRes2 : compileExecPath {t=Tnat} (-10+(-3)) = -13
 test_compileExecPath_add_negRes2 = Refl
---Test EvalPath with IfThenElse using NotEqual (TRUE)
-test_evalPath_ifThenELse_NOTEQUAL_TRUE : evalPath {t=Tnat} (ExpIfThenElse (ExpNotEqual 6 5) 50 100) = 50
-test_evalPath_ifThenELse_NOTEQUAL_TRUE = Refl
 
---Test EvalPath with IfThenElse using NotEqual (FALSE)
-test_evalPath_ifThenELse_NOTEQUAL_FALSE : evalPath {t=Tnat} (ExpIfThenElse (ExpNotEqual 5 5) 50 100) = 100
-test_evalPath_ifThenELse_NOTEQUAL_FALSE = ReflcompileExecPath_mul_negRes : compileExecPath {t=Tnat} (-10*2) = -20
-test_compileExecPath_mul_negRes = Refl
+--compileExecPath_mul_negRes : compileExecPath {t=Tnat} (-10*2) = -20
+--test_compileExecPath_mul_negRes = Refl
 -}
 
 --Test compileExecPath with IfThenElse using comparisons (TRUE)
