@@ -200,10 +200,6 @@ test_EvalPath_sub_posRes = Refl
 test_EvalPath_mul_posRes : evalPath {t=Tint} (10*2) = 20
 test_EvalPath_mul_posRes = Refl
 
---Test EvalPath neg result equal to zero
-test_EvalPath_sub_ZeroIfNeg : evalPath {t=Tint} (10-120) = -110
-test_EvalPath_sub_ZeroIfNeg = Refl
-
 --Test EvalPath negative result
 test_Path_add_negRes : evalPath {t=Tint} (-10+3) = -7
 test_Path_add_negRes = Refl
@@ -346,9 +342,6 @@ test_compileExecPath_sub_posRes = Refl
 
 test_compileExecPath_mul_posRes : compileExecPath {t=Tint} (10*2) = 20
 test_compileExecPath_mul_posRes = Refl
-
-test_compileExecPath_sub_ZeroIfNeg : compileExecPath {t=Tint} (10-120) = -110
-test_compileExecPath_sub_ZeroIfNeg = Refl
 
 --Test compileExecPath negative result
 test_compileExecPath_add_negRes : compileExecPath {t=Tint} (-10+3) = -7
