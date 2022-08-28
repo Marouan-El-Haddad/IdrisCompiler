@@ -174,7 +174,6 @@ test_both_Paths_IfThenElse_GTE_TRUE = Refl
 --test_both_Paths_IfThenElse_GT_TRUE : evalPath {t=Tnat} (ExpIfThenElse (ExpGT 11 10) 50 100) = compileExecPath {t=Tnat} (ExpIfThenElse (ExpGT 11 10) 50 100)
 --test_both_Paths_IfThenElse_GT_TRUE = Refl
 
-
 --Test EvalPath postive result
 test_EvalPath_add_posRes : evalPath {t=Tnat} (2+3) = 5
 test_EvalPath_add_posRes = Refl
@@ -306,6 +305,22 @@ test_evalPath_ifThenELse_LT_AND_FALSE = Refl
 
 test_evalPath_ifThenELse_GT_AND_FALSE : evalPath {t=Tnat} (ExpIfThenElse (ExpAnd (ExpGT 4 5) (ExpGT 4 5)) 50 100)  = 100
 test_evalPath_ifThenELse_GT_AND_FALSE = Refl
+
+--Test EvalPath with IfThenElse using Equal (TRUE)
+test_evalPath_ifThenELse_EQUAL_TRUE : evalPath {t=Tnat} (ExpIfThenElse (ExpEqual 5 5) 50 100) = 50
+test_evalPath_ifThenELse_EQUAL_TRUE = Refl
+
+--Test EvalPath with IfThenElse using Equal (FALSE)
+test_evalPath_ifThenELse_EQUAL_FALSE : evalPath {t=Tnat} (ExpIfThenElse (ExpEqual 6 5) 50 100) = 100
+test_evalPath_ifThenELse_EQUAL_FALSE = Refl
+
+--Test EvalPath with IfThenElse using NotEqual (TRUE)
+test_evalPath_ifThenELse_NOTEQUAL_TRUE : evalPath {t=Tnat} (ExpIfThenElse (ExpNotEqual 6 5) 50 100) = 50
+test_evalPath_ifThenELse_NOTEQUAL_TRUE = Refl
+
+--Test EvalPath with IfThenElse using NotEqual (FALSE)
+test_evalPath_ifThenELse_NOTEQUAL_FALSE : evalPath {t=Tnat} (ExpIfThenElse (ExpNotEqual 5 5) 50 100) = 100
+test_evalPath_ifThenELse_NOTEQUAL_FALSE = Refl
 
 --Test compileExecPath postive result
 test_compileExecPath_add_posRes : compileExecPath {t=Tnat} (2+3) = 5
