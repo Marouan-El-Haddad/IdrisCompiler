@@ -1,29 +1,77 @@
 import Data.Vect
 
+--Data structuresfor abstract syntax Representations
+--Function declarations (one argument, TyExp -> TyExp)
+--Full programs (Fenv should be a list of functions, with expressions e)
+--Function calls (body does not need to call other functions)
+
+--Dependent typed syntax
+--String name of functions
+--Pair<String,Type> formArg
+--Expression body
+--Fuction tager en enkelt variabel af TyExp 
+--data Program =
+--      data FuctDecl... = 
+--
+-- function plusTen x = x + 10
+-- plusTen 5
+-- 15
+
+--Data strukturer for hver syntaktisk kategori
+-- Expr (inkl funktionskald)
+-- Funktion declaration (inkludere: antal parametere (altid 1?) type af parameter.
+--      type af output. Funktions krop(expr))
+-- full program (liste af funktions erklæring & et udtryk (expression) som skal bruges)
+
 data TyExp
     = Tint 
     | Tbool
+    | Tfun TyExp TyExp
 
 total
 Val : TyExp -> Type
 Val Tint = Int
 Val Tbool = Bool
+Val (Tfun x y) = Val x -> Val y
 
-data Exp : TyExp -> Type where
-  ExpVal : Val t -> Exp t
-  ExpAddition : Exp Tint -> Exp Tint -> Exp Tint
-  ExpSubtraction : Exp Tint -> Exp Tint -> Exp Tint
-  ExpMultiplication : Exp Tint -> Exp Tint -> Exp Tint
-  ExpIfThenElse : Exp Tbool -> Exp a -> Exp a -> Exp a
-  ExpOr : Exp Tbool -> Exp Tbool -> Exp Tbool
-  ExpAnd : Exp Tbool -> Exp Tbool -> Exp Tbool
-  ExpNot : Exp Tbool -> Exp Tbool
-  ExpLTE : Exp Tint -> Exp Tint -> Exp Tbool
-  ExpGTE : Exp Tint -> Exp Tint -> Exp Tbool
-  ExpLT : Exp Tint -> Exp Tint -> Exp Tbool
-  ExpGT : Exp Tint -> Exp Tint -> Exp Tbool
-  ExpEqual : Exp Tint -> Exp Tint -> Exp Tbool
-  ExpNotEqual : Exp Tint -> Exp Tint -> Exp Tbool
+mutual
+  record FuncDef where
+    constructor MkFuncDef
+    func_name: Maybe String
+    arg_name: String
+    arg_type: TyExp
+    {return_type: TyExp}
+    body: Exp return_type
+
+  data Exp : TyExp -> Type where
+    ExpVar : String -> Exp t
+    ExpVal : Val t -> Exp t
+    ExpLambda: (d: FuncDef) -> Exp (Tfun d.arg_type d.return_type)
+    ExpApply: Exp (Tfun arg_type return_type) -> Exp arg_type -> Exp return_type
+    --ExpFuncCall : (d: FuncDef) -> Exp (d.arg_type) -> Exp (d.return_type)
+    ExpAddition : Exp Tint -> Exp Tint -> Exp Tint
+    ExpSubtraction : Exp Tint -> Exp Tint -> Exp Tint
+    ExpMultiplication : Exp Tint -> Exp Tint -> Exp Tint
+    ExpIfThenElse : Exp Tbool -> Lazy (Exp a) -> Lazy (Exp a) -> Exp a
+    ExpOr : Exp Tbool -> Exp Tbool -> Exp Tbool
+    ExpAnd : Exp Tbool -> Exp Tbool -> Exp Tbool
+    ExpNot : Exp Tbool -> Exp Tbool
+    ExpLTE : Exp Tint -> Exp Tint -> Exp Tbool
+    ExpGTE : Exp Tint -> Exp Tint -> Exp Tbool
+    ExpLT : Exp Tint -> Exp Tint -> Exp Tbool
+    ExpGT : Exp Tint -> Exp Tint -> Exp Tbool
+    ExpEqual : Exp Tint -> Exp Tint -> Exp Tbool
+    ExpNotEqual : Exp Tint -> Exp Tint -> Exp Tbool
+
+FullProgram: Type
+FullProgram = List FuncDef
+--data FullProgram = List FuncDef
+
+--f(x) = x+2
+--MkFuncDef (Just "f") "x" Tint Tint (ExpPlus (ExpVar "x") (ExpVal 2))
+
+--\x => x+2
+--ExprLambda (MkFuncDef Nothing "x" Tint Tint (ExpPlus (ExpVar "x") (ExpVal 2)))
 
 |||Using the Num interface to define basic numerical arithmetic
 Num (Exp Tint) where
