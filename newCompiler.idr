@@ -13,11 +13,6 @@ data HasTypeVar : (i : Fin n) -> Vect n TyExp -> TyExp -> Type where
     PopVar  : HasTypeVar kFin vcntxt tVar 
            -> HasTypeVar (FS kFin) (uVar :: vcntxt) tVar
 
-data HasTypeFunc : (i : Fin n) -> Vect n (TyExp, TyExp) -> (TyExp, TyExp) -> Type where
-    StopFunc : HasTypeFunc FZ ((tFunc, sFunc) :: fcntxt) (tFunc, sFunc)
-    PopFunc  : HasTypeFunc kFin fcntxt (tFunc, sFunc) 
-            -> HasTypeFunc (FS kFin) ((uFunc, vFunc) :: fcntxt) (tFunc, sFunc)
-
 data Exp : (vEnv: Vect n TyExp) -> (TyExp, TyExp) -> TyExp -> Type where
   ExpVar : HasTypeVar iFin vEnv t -> Exp vEnv fEnv t
   ExpVal : (x : Int) -> Exp vEnv fEnv Tint
