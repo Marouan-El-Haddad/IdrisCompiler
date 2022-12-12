@@ -50,23 +50,22 @@ lookupVar : HasTypeVar i lcontex t -> VarEnv lcontex -> Val t
 lookupVar StopVar (x :: xs) = x
 lookupVar (PopVar k) (x :: xs) = lookupVar k xs
 
-mutual
-  evalOpenProg : (op: OpenProgram) -> Val op.op_return_type
-  evalOpenProg (MkOpenProgram op_funDecl op_return_type op_arg_type val_arg (ExpVar x)) = lookupVar x (val_arg :: Nil)
-  evalOpenProg (MkOpenProgram op_funDecl Tint op_arg_type val_arg (ExpVal x)) = x
-  evalOpenProg (MkOpenProgram op_funDecl Tint op_arg_type val_arg (ExpAddition x y)) = evalOpenProg (assert_smaller x $ MkOpenProgram op_funDecl Tint op_arg_type val_arg x) + evalOpenProg (assert_smaller y $ MkOpenProgram op_funDecl Tint op_arg_type val_arg y)
-  evalOpenProg (MkOpenProgram op_funDecl (op_funDecl.fd_return_type) op_arg_type val_arg (ExpFuncCall x)) = ?hole
-  
-  evalProg : (p: Program) -> Val p.p_return_type
-  evalProg (MkProgram _ _ (ExpVar StopVar)) impossible
-  evalProg (MkProgram _ _ (ExpVar (PopVar x))) impossible
-  evalProg (MkProgram p_funDecl Tint (ExpVal x)) = x
-  evalProg (MkProgram p_funDecl Tint (ExpAddition x y)) = evalProg (assert_smaller x $ MkProgram p_funDecl Tint x) + evalProg (assert_smaller y $ MkProgram p_funDecl Tint y)
-  evalProg (MkProgram p_funDecl (p_funDecl.fd_return_type) (ExpFuncCall x)) 
-                  = evalOpenProg (
-                      MkOpenProgram p_funDecl (p_funDecl.fd_return_type) p_funDecl.fd_var_type (
-                        evalProg (assert_smaller x $
-                          MkProgram p_funDecl (p_funDecl.fd_var_type) x
-                          )
-                      ) p_funDecl.body 
-                    )
+evalOpenProg : (op: OpenProgram) -> Val op.op_return_type
+evalOpenProg (MkOpenProgram op_funDecl op_return_type op_arg_type val_arg (ExpVar x)) = lookupVar x (val_arg :: Nil)
+evalOpenProg (MkOpenProgram op_funDecl Tint op_arg_type val_arg (ExpVal x)) = x
+evalOpenProg (MkOpenProgram op_funDecl Tint op_arg_type val_arg (ExpAddition x y)) = evalOpenProg (assert_smaller x $ MkOpenProgram op_funDecl Tint op_arg_type val_arg x) + evalOpenProg (assert_smaller y $ MkOpenProgram op_funDecl Tint op_arg_type val_arg y)
+evalOpenProg (MkOpenProgram op_funDecl (op_funDecl.fd_return_type) op_arg_type val_arg (ExpFuncCall x)) = ?hole
+
+evalProg : (p: Program) -> Val p.p_return_type
+evalProg (MkProgram _ _ (ExpVar StopVar)) impossible
+evalProg (MkProgram _ _ (ExpVar (PopVar x))) impossible
+evalProg (MkProgram p_funDecl Tint (ExpVal x)) = x
+evalProg (MkProgram p_funDecl Tint (ExpAddition x y)) = evalProg (assert_smaller x $ MkProgram p_funDecl Tint x) + evalProg (assert_smaller y $ MkProgram p_funDecl Tint y)
+evalProg (MkProgram p_funDecl (p_funDecl.fd_return_type) (ExpFuncCall x)) 
+                = evalOpenProg (
+                    MkOpenProgram p_funDecl (p_funDecl.fd_return_type) p_funDecl.fd_var_type (
+                      evalProg (assert_smaller x $
+                        MkProgram p_funDecl (p_funDecl.fd_var_type) x
+                        )
+                    ) p_funDecl.body 
+                  )
