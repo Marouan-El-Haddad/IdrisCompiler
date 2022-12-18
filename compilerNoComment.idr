@@ -32,7 +32,6 @@ data Exp : (vEnv: Vect n TyExp) -> (TyExp, TyExp) -> TyExp -> Type where
   ExpGreaterThanEqual : Exp vEnv fEnv Tint -> Exp vEnv fEnv Tint -> Exp vEnv fEnv Tbool
   ExpFuncCall: Exp vEnv (s,t) s -> Exp vEnv (s,t) t
   
-
 record FunDecl where
   constructor MkFunDecl
   fd_var_type: TyExp
@@ -62,7 +61,6 @@ data VarEnv : Vect n TyExp -> Type where
 lookupVar : HasTypeVar i lcontex t -> VarEnv lcontex -> Val t
 lookupVar StopVar (x :: xs) = x
 lookupVar (PopVar k) (x :: xs) = lookupVar k xs
-
 
 evalOpenProg : (op: OpenProgram) -> Val op.op_return_type
 evalOpenProg (MkOpenProgram op_funDecl op_return_type op_arg_type val_arg (ExpVar x)) = lookupVar x (val_arg :: Nil)
@@ -112,7 +110,6 @@ evalProg (MkProgram p_funDecl (p_funDecl.fd_return_type) (ExpFuncCall x))
                         )
                     ) p_funDecl.body 
                   )
-
 
 ----------------------------------------------------------------------------------------
 --test using evalOpenProg
