@@ -114,6 +114,8 @@ evalProg (MkProgram p_funDecl (p_funDecl.fd_return_type) (ExpFuncCall x))
                   )
 
 
+----------------------------------------------------------------------------------------
+--test using evalOpenProg
 
 -- Define a function that adds two integers
 add : FunDecl
